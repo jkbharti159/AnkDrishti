@@ -1,0 +1,6 @@
+{
+  "name": "AnkDrishti",
+  "description": "AnkDrishti: A fully functional numerology website with 3D celestial canvas and an interactive flashcard learning deck.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

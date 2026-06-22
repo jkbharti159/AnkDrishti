@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cinzel", "Georgia", "Times New Roman", serif;
+  --font-decorative: "Playfair Display", "Cormorant Garamond", serif;
+}
+
+/* Global body styling */
+body {
+  background-color: #060509;
+  color: #f4f3f7;
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #09080c;
+}
+::-webkit-scrollbar-thumb {
+  background: #1b1922;
+  border-radius: 4px;
+  border: 1px solid rgba(197, 168, 128, 0.15);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c5a880;
+}
+
+/* 3D transformation utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* SVG Line dash running animation */
+@keyframes dash-run {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+.animate-dash {
+  stroke-dasharray: 6 4;
+  animation: dash-run 2.5s linear infinite;
+}
+
+/* Float items up & down gently */
+@keyframes float-loop {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.animate-float {
+  animation: float-loop 5s ease-in-out infinite;
+}
+
+/* Repulsion shake animation */
+@keyframes shake-repel {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
+  20%, 40%, 60%, 80% { transform: translateX(6px); }
+}
+.animate-shake {
+  animation: shake-repel 0.6s ease-in-out infinite;
+}
+
+/* Satisfying fly-away card mastery animation */
+@keyframes fly-away-effect {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+  40% {
+    transform: translate3d(-15px, 20px, 0) scale(0.9) rotate(-3deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(350px, -450px, 0) scale(0.3) rotate(35deg);
+    opacity: 0;
+  }
+}
+.animate-fly-away {
+  animation: fly-away-effect 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+  pointer-events: none !important;
+}
+
+/* Scattered card shuffle effect */
+@keyframes shuffle-scatter-left {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0); }
+  50% { transform: translate3d(-180px, -20px, 0) rotate(-15deg); }
+}
+.animate-shuffle-scatter {
+  animation: shuffle-scatter-left 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Glow highlights */
+.shadow-glow-title {
+  text-shadow: 0 0 12px rgba(197, 168, 128, 0.45), 0 0 25px rgba(197, 168, 128, 0.2);
+}
+
+.shadow-glow-medallion {
+  box-shadow: 0 0 30px rgba(197, 168, 128, 0.25);
+}
+
+.shadow-glow-chip {
+  box-shadow: 0 0 12px rgba(197, 168, 128, 0.15);
+}
+
+/* Smooth fade-in transitions */
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Letter-by-letter staggering helper */
+.stagger-character {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: charReveal 0.6s ease-out forwards;
+}
+
+@keyframes charReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
