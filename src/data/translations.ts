@@ -190,7 +190,7 @@ export const staticUI: Record<string, LocalizedUI> = {
       cta: "Conspire with Fate",
       alignDown: "Align down",
       credits: "Developed by",
-      welcomeTitle: "Welcome to AnkDrishti",
+      welcomeTitle: "WELCOME TO AnkDrishti",
       welcomeSubtitle: "A Sacred Conjunction of Numerology & Ancient Vedic Astrology",
       welcomeMessage: "We invite you to explore the vibrational frequency of your life path, chart ancestral alignments, view relationship synergies, and trace the mystical geometric patterns of the heavens. May your search for self-understanding bring you clarity, peace, and divine alignment."
     },
@@ -375,7 +375,7 @@ export const staticUI: Record<string, LocalizedUI> = {
       cta: "भाग्य के साथ संरेखित करें",
       alignDown: "नीचे संरेखित करें",
       credits: "विकसित किया गया",
-      welcomeTitle: "अंकदृष्टि में आपका स्वागत है",
+      welcomeTitle: "WELCOME TO AnkDrishti",
       welcomeSubtitle: "अंकशास्त्र और प्राचीन वैदिक ज्योतिष का एक पवित्र संगम",
       welcomeMessage: "हम आपको अपने जीवन पथ की कंपनात्मक आवृत्ति का पता लगाने, पैतृक संरेखणों को समझने, संबंध अनुकूलता देखने और ब्रह्मांड के रहस्यमयी ज्यामितीय पैटर्न का पता लगाने के लिए आमंत्रित करते हैं। आप स्वयं को बेहतर ढंग से समझकर स्पष्टता, शांति और दैवीय आशीर्वाद प्राप्त करें।"
     },
@@ -560,7 +560,7 @@ export const staticUI: Record<string, LocalizedUI> = {
       cta: "ভাগ্যের সাথে সারিবদ্ধ করুন",
       alignDown: "নীচে সারিবদ্ধ করুন",
       credits: "তৈরি করেছেন",
-      welcomeTitle: "অঙ্কদৃষ্টিতে স্বাগতম",
+      welcomeTitle: "WELCOME TO AnkDrishti",
       welcomeSubtitle: "সংখ্যাতত্ত্ব এবং প্রাচীন বৈদিক জ্যোতিষের এক পবিত্র সংযোগ",
       welcomeMessage: "আমরা আপনাকে আপনার জীবনপথের কম্পন ফ্রিকোয়েন্সি অন্বেষণ করতে, পূর্বপুরুষের সারিবদ্ধতা বুঝতে, সম্পর্কের সাদৃশ্য দেখতে এবং আকাশের রহস্যময় জ্যামিতিক নকশাগুলি অনুধাবন করার জন্য আমন্ত্রণ জানাচ্ছি। আপনার আত্ম-উপলব্ধি আপনাকে স্পষ্টতা, শান্তি এবং ঐশ্বরিক অনুকম্পা এনে দিক।"
     },
@@ -745,7 +745,7 @@ export const staticUI: Record<string, LocalizedUI> = {
       cta: "भाग्याशी संरेखित व्हा",
       alignDown: "खाली संरेखित करा",
       credits: "विकसित केले",
-      welcomeTitle: "अंकदृष्टीमध्ये आपले स्वागत आहे",
+      welcomeTitle: "WELCOME TO AnkDrishti",
       welcomeSubtitle: "अंकशास्त्र आणि प्राचीन वैदिक ज्योतिषशास्त्राचा एक पवित्र संगम",
       welcomeMessage: "आम्ही तुम्हाला तुमच्या जीवनमार्गाच्या लहरींचा आणि कंपनांचा शोध घेण्यास, पूर्वजांच्या योगांचे विश्लेषण करण्यास, परस्पर संबंधांमधील सुसंवाद तपासण्यास आणि विश्वाच्या रहस्यमय भौमितिक आकृतींचा वेध घेण्यास आमंत्रित करतो. आत्म-साक्षात्कारामुळे तुम्हाला स्पष्टता, मानसिक शांतता आणि दैवी संरेखण लाभो."
     },
@@ -930,7 +930,7 @@ export const staticUI: Record<string, LocalizedUI> = {
       cta: "ભાગ્ય સાથે સંરેખિત થાઓ",
       alignDown: "નીચે સંરેખિત કરો",
       credits: "વિકસિત કરનાર",
-      welcomeTitle: "અંકદૃષ્ટિમાં આપનું સ્વાગત છે",
+      welcomeTitle: "WELCOME TO AnkDrishti",
       welcomeSubtitle: "અંકશાસ્ત્ર અને પ્રાચીન વૈદિક જ્યોતિષશાસ્ત્રનો એક પવિત્ર સંગમ",
       welcomeMessage: "અમે તમને તમારા જીવન માર્ગની કંપન આવર્તનની શોધ કરવા, પૂર્વજોના જોડાણોને સમજવા, સંબંધોની સુસંગતતા જોવા અને આકાશના રહસ્યમય ભૌમિતિક નકશાઓને સમજવા માટે આમંત્રિત કરીએ છીએ. આશા છે કે તમારો આત્મ-શોધનો પ્રવાસ તમને સ્પષ્ટતા, પ્રગાઢ શાંતિ અને દૈવી આશીર્વાદ પ્રદાન કરે."
     },

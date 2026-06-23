@@ -300,7 +300,7 @@ export default function App() {
                         <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-amber-500/20" />
                       </div>
 
-                      <h2 className="text-xl md:text-2xl font-serif text-white tracking-widest font-black leading-tight mb-2">
+                      <h2 className="text-xl md:text-2xl font-decorative text-white tracking-widest font-black leading-tight mb-2">
                         {t("portal.welcomeTitle")}
                       </h2>
                       
