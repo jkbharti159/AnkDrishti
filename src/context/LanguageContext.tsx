@@ -148,15 +148,28 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       utterance.rate = 0.90; // spiritual slowly pace pacing rate
       utterance.pitch = 0.95; // soothing deep texture pitch
 
-      // Best Voice Match Routine with underscore support (e.g. hi_IN, bn_IN, etc.)
+      // Best Voice Match Routine with premium/standardized engine prioritization (Google/Microsoft/Apple)
       const prefix = targetLang.substring(0, 2);
-      let spokenVoice = availableVoices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase());
       
+      // Filter voices matching language or prefix
+      const candidateVoices = availableVoices.filter(v => {
+        const lowerV = v.lang.toLowerCase().replace("_", "-");
+        return lowerV === targetLang.toLowerCase() || lowerV.startsWith(prefix);
+      });
+
+      // Prioritize high-quality voices sequentially
+      let spokenVoice = candidateVoices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase() && v.name.toLowerCase().includes("google"));
       if (!spokenVoice) {
-        spokenVoice = availableVoices.find(v => {
-          const lowerV = v.lang.toLowerCase().replace("_", "-");
-          return lowerV === targetLang.toLowerCase() || lowerV.startsWith(prefix);
-        });
+        spokenVoice = candidateVoices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase() && (v.name.toLowerCase().includes("microsoft") || v.name.toLowerCase().includes("apple") || v.name.toLowerCase().includes("siri")));
+      }
+      if (!spokenVoice) {
+        spokenVoice = candidateVoices.find(v => v.lang.toLowerCase() === targetLang.toLowerCase());
+      }
+      if (!spokenVoice) {
+        spokenVoice = candidateVoices.find(v => v.name.toLowerCase().includes("google"));
+      }
+      if (!spokenVoice) {
+        spokenVoice = candidateVoices[0];
       }
 
       if (spokenVoice) {

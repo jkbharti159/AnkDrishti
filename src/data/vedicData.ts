@@ -320,7 +320,37 @@ export function get_planetary_positions(date: Date): PlanetInfo[] {
     }
 
     if (pName === "Moon") {
-      let l = (218.316 + 13.176396 * d) % 360;
+      // High-precision lunar geocentric longitude incorporating Meeus perturbation terms
+      const L_mean = (218.3164477 + 13.17639648 * d) % 360;
+      const M_sun = (357.5277233 + 0.98560028 * d) % 360;
+      const M_moon = (134.96292 + 13.06499295 * d) % 360;
+      const D = (297.850192 + 12.19074912 * d) % 360;
+      const F = (93.272095 + 13.22935025 * d) % 360;
+
+      const r = (val: number) => (val * Math.PI) / 180;
+
+      const dL = 6.288774 * Math.sin(r(M_moon))
+               + 1.274027 * Math.sin(r(2 * D - M_moon))
+               + 0.658309 * Math.sin(r(2 * D))
+               + 0.213618 * Math.sin(r(2 * M_moon))
+               - 0.185116 * Math.sin(r(M_sun))
+               - 0.114332 * Math.sin(r(2 * F))
+               + 0.058793 * Math.sin(r(2 * D - 2 * M_moon))
+               + 0.057066 * Math.sin(r(2 * D - M_moon - M_sun))
+               + 0.053322 * Math.sin(r(2 * D + M_moon))
+               + 0.045758 * Math.sin(r(2 * D - M_sun))
+               - 0.040923 * Math.sin(r(M_moon - M_sun))
+               - 0.034720 * Math.sin(r(D))
+               - 0.030383 * Math.sin(r(M_moon + M_sun))
+               + 0.015327 * Math.sin(r(2 * D - 2 * F))
+               - 0.012528 * Math.sin(r(2 * F + M_moon))
+               - 0.009380 * Math.sin(r(2 * F - M_moon))
+               + 0.008627 * Math.sin(r(2 * D - M_moon + M_sun))
+               + 0.008431 * Math.sin(r(2 * D + 2 * M_moon))
+               + 0.007436 * Math.sin(r(2 * D - 2 * M_sun))
+               - 0.003920 * Math.sin(r(2 * M_sun));
+
+      let l = (L_mean + dL) % 360;
       if (l < 0) l += 360;
       return l;
     }
