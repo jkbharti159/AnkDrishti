@@ -183,7 +183,8 @@ export const staticUI: Record<string, LocalizedUI> = {
       rays: "Rays",
       tarot: "Tarot",
       synergy: "Synergy",
-      zodiac: "Zodiac"
+      zodiac: "Zodiac",
+      obstacles: "Obstacles"
     },
     portal: {
       tagline: "Explore the vibrational blueprint of your soul. Calculate your destiny path, study mystical flashcard matrices, and merge celestial harmonics.",
@@ -368,7 +369,8 @@ export const staticUI: Record<string, LocalizedUI> = {
       rays: "किरणें",
       tarot: "टैरो",
       synergy: "तालमेल",
-      zodiac: "राशिचक्र"
+      zodiac: "राशिचक्र",
+      obstacles: "बाधाएं"
     },
     portal: {
       tagline: "अपनी आत्मा के स्पंदन ब्लूप्रिंट का अन्वेषण करें। अपने भाग्य पथ की गणना करें, रहस्यमयी टैरो कार्डों का अध्ययन करें, और दिव्य सामंजस्य का विलय करें।",
@@ -553,7 +555,8 @@ export const staticUI: Record<string, LocalizedUI> = {
       rays: "কিরণ",
       tarot: "ট্যারোট",
       synergy: "সমন্বয়",
-      zodiac: "রাশিচক্র"
+      zodiac: "রাশিচক্র",
+      obstacles: "বাধা"
     },
     portal: {
       tagline: "আপনার আত্মার কম্পনজনিত নীল নকশা অন্বেষণ করুন। আপনার ভাগ্যের পথ হিসেব করুন, রহস্যময় ট্যারোট কার্ড অধ্যয়ন করুন এবং মহাজাগতিক সামঞ্জস্যের সংমিশ্রণ করুন।",
@@ -738,7 +741,8 @@ export const staticUI: Record<string, LocalizedUI> = {
       rays: "किरणे",
       tarot: "टॅरो",
       synergy: "ताळमेळ",
-      zodiac: "राशीचक्र"
+      zodiac: "राशीचक्र",
+      obstacles: "अडथळे"
     },
     portal: {
       tagline: "आपल्या आत्म्याच्या कंपनांच्या आराखड्याचा शोध घ्या. आपल्या भाग्याचा मार्ग मोजा, रहस्यमय टॅरो कार्ड्सचा अभ्यास करा आणि दिव्य सुसंवादाचे विलीनीकरण करा.",
@@ -923,7 +927,8 @@ export const staticUI: Record<string, LocalizedUI> = {
       rays: "કિરણો",
       tarot: "ટેરોટ",
       synergy: "મેળાવ / સાયુજ્ય",
-      zodiac: "રાશિફળ"
+      zodiac: "રાશિફળ",
+      obstacles: "અવરોધો"
     },
     portal: {
       tagline: "તમારા આત્માની કંપનયુક્ત બ્લૂપ્રિન્ટની શોધ કરો. તમારા ભાગ્યના માર્ગની ગણતરી કરો, રહસ્યમય ટેરોટ કાર્ડ્સનો અભ્યાસ કરો અને દૈવી સુમેળનું વિલીનીકરણ કરો.",

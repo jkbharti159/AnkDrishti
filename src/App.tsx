@@ -9,7 +9,8 @@ import ZodiacVideoBackground from "./components/ZodiacVideoBackground";
 import ShivaImageBackground from "./components/ShivaImageBackground";
 import CustomCursor from "./components/CustomCursor";
 import Swastika from "./components/Swastika";
-import { Sparkles, Moon, Sun, Star, Compass, HelpCircle, ChevronDown, Compass as Astrolabe, ChevronRight, Linkedin, Globe } from "lucide-react";
+import VedicLifeObstacleAnalyzer from "./components/VedicLifeObstacleAnalyzer";
+import { Sparkles, Moon, Sun, Star, Compass, HelpCircle, ChevronDown, Compass as Astrolabe, ChevronRight, Linkedin, Globe, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useLanguage } from "./context/LanguageContext";
 
@@ -20,11 +21,12 @@ const TABS = [
   { id: "tarot", label: "Tarot", icon: Moon },
   { id: "synergy", label: "Synergy", icon: Sun },
   { id: "zodiac", label: "Zodiac", icon: Astrolabe },
+  { id: "obstacles", label: "Obstacles", icon: Shield },
 ] as const;
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"portal" | "ank-map" | "rays" | "tarot" | "synergy" | "zodiac" | "calculator">("portal");
+  const [activeTab, setActiveTab] = useState<"portal" | "ank-map" | "rays" | "tarot" | "synergy" | "zodiac" | "calculator" | "obstacles">("portal");
   const [langOpen, setLangOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
 
@@ -37,13 +39,13 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleTabChange = (tabId: "portal" | "ank-map" | "rays" | "tarot" | "synergy" | "zodiac" | "calculator") => {
+  const handleTabChange = (tabId: "portal" | "ank-map" | "rays" | "tarot" | "synergy" | "zodiac" | "calculator" | "obstacles") => {
     setActiveTab(tabId);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const goToPrevTab = () => {
-    const tabList: ("portal" | "ank-map" | "rays" | "tarot" | "synergy" | "zodiac")[] = ["portal", "ank-map", "rays", "tarot", "synergy", "zodiac"];
+    const tabList: ("portal" | "ank-map" | "rays" | "tarot" | "synergy" | "zodiac" | "obstacles")[] = ["portal", "ank-map", "rays", "tarot", "synergy", "zodiac", "obstacles"];
     let currentIdx = tabList.indexOf(activeTab as any);
     if (currentIdx === -1) currentIdx = 0;
     const prevIdx = (currentIdx - 1 + tabList.length) % tabList.length;
@@ -51,7 +53,7 @@ export default function App() {
   };
 
   const goToNextTab = () => {
-    const tabList: ("portal" | "ank-map" | "rays" | "tarot" | "synergy" | "zodiac")[] = ["portal", "ank-map", "rays", "tarot", "synergy", "zodiac"];
+    const tabList: ("portal" | "ank-map" | "rays" | "tarot" | "synergy" | "zodiac" | "obstacles")[] = ["portal", "ank-map", "rays", "tarot", "synergy", "zodiac", "obstacles"];
     let currentIdx = tabList.indexOf(activeTab as any);
     if (currentIdx === -1) currentIdx = 0;
     const nextIdx = (currentIdx + 1) % tabList.length;
@@ -408,6 +410,18 @@ export default function App() {
               >
                 <ZodiacVideoBackground />
                 <ZodiacWheel />
+              </motion.div>
+            )}
+
+            {activeTab === "obstacles" && (
+              <motion.div
+                key="obstacles"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+              >
+                <VedicLifeObstacleAnalyzer />
               </motion.div>
             )}
           </AnimatePresence>

@@ -1218,18 +1218,18 @@ export default function CosmicDoshaFlashcards({
                 {/* House Numbers and Occupants Overlay */}
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((houseNum) => {
                   const textCoordsMap: Record<number, { x: number; y: number }> = {
-                    1: { x: 150, y: 55 },
-                    2: { x: 100, y: 40 },
-                    3: { x: 40, y: 100 },
-                    4: { x: 95, y: 150 },
-                    5: { x: 40, y: 200 },
-                    6: { x: 100, y: 260 },
-                    7: { x: 150, y: 245 },
-                    8: { x: 200, y: 260 },
-                    9: { x: 260, y: 200 },
-                    10: { x: 205, y: 150 },
-                    11: { x: 260, y: 100 },
-                    12: { x: 200, y: 40 }
+                    1: { x: 150, y: 75 },
+                    2: { x: 75, y: 25 },
+                    3: { x: 25, y: 75 },
+                    4: { x: 75, y: 150 },
+                    5: { x: 25, y: 225 },
+                    6: { x: 75, y: 275 },
+                    7: { x: 150, y: 225 },
+                    8: { x: 225, y: 275 },
+                    9: { x: 275, y: 225 },
+                    10: { x: 225, y: 150 },
+                    11: { x: 275, y: 75 },
+                    12: { x: 225, y: 25 }
                   };
 
                   const coords = textCoordsMap[houseNum];

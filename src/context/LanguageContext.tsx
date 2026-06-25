@@ -3,6 +3,7 @@ import { staticUI, localizedNumberMeanings, LocalizedUI } from "../data/translat
 import { NumberMeaning, Flashcard } from "../types";
 import { numberMeanings, flashcards, zodiacNumberData } from "../data/numerologyData";
 import { mulankProfiles } from "../data/vedicData";
+import { extraFlashcardTranslations } from "../data/flashcardTranslations";
 
 type LanguageType = "en" | "hi" | "bn" | "mr" | "gu";
 type PlaybackState = "idle" | "playing" | "paused";
@@ -839,6 +840,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           question: localized.q,
           answer: localized.a,
           category: localized.cat
+        };
+      }
+      const extraLocalized = extraFlashcardTranslations[language]?.[fc.id];
+      if (extraLocalized) {
+        return {
+          ...fc,
+          question: extraLocalized.q,
+          answer: extraLocalized.a,
+          category: extraLocalized.cat
         };
       }
       return fc;

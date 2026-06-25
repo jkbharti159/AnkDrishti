@@ -11,6 +11,8 @@ import { get_planetary_positions } from "../data/vedicData";
 import CosmicDoshaFlashcards from "./CosmicDoshaFlashcards";
 import CompatibilityVideoBackground from "./CompatibilityVideoBackground";
 import CelestialBackground from "./CelestialBackground";
+import BirthPlaceAutocomplete from "./BirthPlaceAutocomplete";
+import { GeocodedPlace } from "../services/geocodingService";
 
 // -------------------------------------------------------------------------
 // Vedic Calculations - Core Shastric & Astronomical Constants
@@ -453,33 +455,33 @@ const G_ = ({
   if (!houses || houses.length === 0) return null;
   
   const labelPositions: Record<number, { labelX: number; labelY: number }> = {
-    1: { labelX: 150, labelY: 75 },
-    2: { labelX: 75, labelY: 34 },
-    3: { labelX: 34, labelY: 75 },
-    4: { labelX: 75, labelY: 150 },
-    5: { labelX: 34, labelY: 225 },
-    6: { labelX: 75, labelY: 266 },
-    7: { labelX: 150, labelY: 225 },
-    8: { labelX: 225, labelY: 266 },
-    9: { labelX: 266, labelY: 225 },
-    10: { labelX: 225, labelY: 150 },
-    11: { labelX: 266, labelY: 75 },
-    12: { labelX: 225, labelY: 34 }
+    1: { labelX: 150, labelY: 98 },
+    2: { labelX: 75, labelY: 48 },
+    3: { labelX: 45, labelY: 75 },
+    4: { labelX: 98, labelY: 150 },
+    5: { labelX: 45, labelY: 225 },
+    6: { labelX: 75, labelY: 252 },
+    7: { labelX: 150, labelY: 202 },
+    8: { labelX: 225, labelY: 252 },
+    9: { labelX: 255, labelY: 225 },
+    10: { labelX: 202, labelY: 150 },
+    11: { labelX: 255, labelY: 75 },
+    12: { labelX: 225, labelY: 48 }
   };
 
   const houseNamePositions: Record<number, { x: number; y: number }> = {
-    1: { x: 150, y: 15 },
-    2: { x: 75, y: 14 },
-    3: { x: 12, y: 75 },
-    4: { x: 15, y: 150 },
-    5: { x: 12, y: 225 },
-    6: { x: 75, y: 286 },
-    7: { x: 150, y: 284 },
-    8: { x: 225, y: 286 },
-    9: { x: 288, y: 225 },
-    10: { x: 282, y: 150 },
-    11: { x: 288, y: 75 },
-    12: { x: 225, y: 14 }
+    1: { x: 150, y: 75 },
+    2: { x: 75, y: 25 },
+    3: { x: 25, y: 75 },
+    4: { x: 75, y: 150 },
+    5: { x: 25, y: 225 },
+    6: { x: 75, y: 275 },
+    7: { x: 150, y: 225 },
+    8: { x: 225, y: 275 },
+    9: { x: 275, y: 225 },
+    10: { x: 225, y: 150 },
+    11: { x: 275, y: 75 },
+    12: { x: 225, y: 25 }
   };
 
   const signNumberPositions: Record<number, { x: number; y: number }> = {
@@ -797,8 +799,552 @@ const MP = (text: string) => {
 // Main CosmicConnections Component
 // -------------------------------------------------------------------------
 
+const synergyTextMap: Record<string, Record<string, string>> = {
+  en: {
+    badge: "Celestial Harmonics Tab",
+    singleKundali: "Single Kundali",
+    coupleMatching: "Couple Matching",
+    partnerADetails: "Partner A Details",
+    nativeBirthDetails: "Native Birth Details (For Marriage Prediction)",
+    lagnaBirthDetails: "Lagna Birth Details",
+    firstNativeCoordMap: "First Native Coordinate Map",
+    secondNativeCoordMap: "Second Native Coordinate Map",
+    firstName: "First Name",
+    dateOfBirth: "Date of Birth",
+    timeOfBirth: "Time of Birth",
+    placeOfBirth: "Place of Birth",
+    partnerBDetails: "Partner B Details",
+    secondName: "Second Name",
+    resolvingAlignment: "Resolving Alignment...",
+    predictMarriageTiming: "Predict Marriage Timing",
+    establishSynergyGrid: "Establish Synergy Grid",
+    ashtakootSuitability: "Ashtakoot Suitability",
+    diagnosticFlashcards: "Diagnostic Flashcards",
+    astrologicalCharts: "Astrological Charts",
+    vedicInterpretation: "Vedic Interpretation",
+    resonanceScore: "Resonance Score",
+    outOf36Gunas: "Out of 36 Gunas",
+    detailedAshtakoot: "Detailed 8-Fold Ashtakoot Breakdown",
+    points: "Points",
+    calculateMarriageWindows: "Calculate Favorable Marriage Windows",
+    marriageWindowsShastras: "Based on ancient Vedic Shastras and AnkDrishti planetary numerology cycles (Personal Year vibrations of Venus 6, Jupiter 3, and Moon 2).",
+    astrologicalMatrixLocked: "Astrological Matrix Locked",
+    auspiciousTimingMatrixDesc: "The auspicious timing matrix combines birth dates, planetary alignments of Venus & Jupiter, and personal year loops to reveal favorable marriage windows.",
+    varnaCategory: "Varna (Class)",
+    varnaSig: "Boy: {boyVal}, Girl: {girlVal}. Represents cosmic work and ego-intellect mapping.",
+    vashyaCategory: "Vashya (Control)",
+    vashyaSig: "Boy: {boyVal}, Girl: {girlVal}. Represents sub-conscious attraction and dominance.",
+    taraCategory: "Tara (Destiny Star)",
+    taraSig: "Auspicious star compatibility mapping. Represents daily luck and health patterns.",
+    yoniCategory: "Yoni (Physical Harmony)",
+    yoniSig: "Boy: {boyVal}, Girl: {girlVal}. Represents biological alignment and magnetic attraction.",
+    grahaMaitriCategory: "Graha Maitri (Friendship)",
+    grahaMaitriSig: "Boy Lord: {boyVal}, Girl Lord: {girlVal}. Represents friendship and general understanding.",
+    ganaCategory: "Gana (Temperament)",
+    ganaSig: "Boy: {boyVal}, Girl: {girlVal}. Represents mental temperament and outlook on life.",
+    bhakootCategory: "Bhakoot (Emotional Concord)",
+    bhakootSig: "Moon distance: {boyVal} sectors. Represents emotional waves compatibility. {statusText}",
+    bhakootDefect: "Bhakoot defect is present (lessons in sharing).",
+    bhakootAuspicious: "Auspicious Bhakoot.",
+    nadiCategory: "Nadi (Vitality Rhythms)",
+    nadiSig: "Boy Nadi: {boyVal}, Girl Nadi: {girlVal}. Represents biological wave patterns. {statusText}",
+    nadiDefect: "Nadi defect is present (lessons in energy balancing).",
+    nadiAuspicious: "Auspicious Nadi.",
+    py6Label: "Highly Auspicious (Venus Cycle)",
+    py6Text: "Year governed by Venus, the cosmic master of alliances, love, domestic harmony, and marriage unions. Excellent for legal and sacred commitments.",
+    py3Label: "Auspicious Expansion (Jupiter Cycle)",
+    py3Text: "Year governed by Jupiter, representing divine grace, luck, protector of marriage, wisdom, and ritual expansion. Highly favorable for family blessing.",
+    py2Label: "Harmonious Union (Moon Cycle)",
+    py2Text: "Year of the Moon, focusing on empathy, pairing, collaboration, and emotional consolidation. Perfect for establishing shared emotional roots.",
+    py1Label: "New Beginnings (Sun Cycle)",
+    py1Text: "Year of the Sun, marking new beginnings, leadership, and shifts in social status. Favorable for initiating fresh life stages and commitments.",
+    py9Label: "Karmic Milestones (Mars Cycle)",
+    py9Text: "Year of Mars, triggering the closure of old 9-year loops to prepare for significant commitments. Excellent for high-intensity spiritual resolutions.",
+    py5Label: "Dynamic Adaptation (Mercury Cycle)",
+    py5Text: "Year of Mercury, ruling communication, travel, and contracts. Good for verbal alignments and public engagements, though requires detailed planning.",
+    py8Label: "Karmic Balance (Saturn Cycle)",
+    py8Text: "Year of Saturn, indicating heavy responsibilities, duties, and steady progress. Safe for marriage if patience and duty are valued over impulse.",
+    py4Label: "Unpredictable Shifts (Rahu Cycle)",
+    py4Text: "Year of Rahu, prompting unexpected turns, travel, or sudden alignments. Requires extreme caution, grounding, and clear legal boundaries.",
+    pyOtherLabel: "Spiritual Introspection (Ketu Cycle)",
+    pyOtherText: "Year of Ketu, calling for inner work, meditation, and spiritual reflection. Best suited for spiritual or simple quiet ceremonies rather than grand events.",
+    upcomingTimeline: "Upcoming 7-Year Marriage Timeline Alignment",
+    primaryOptimalWindow: "Primary Optimal Window",
+    personalYearCycle: "Personal Year cycle",
+    signDisplayLabel: "Sign display:",
+    d1Chart: "D1 Rashi Chart",
+    d9Chart: "D9 Navamsa Chart",
+    interBadgeInfo: "Interactive Badge Info",
+    placementLabel: "Placement",
+    residesIn: "Resides in",
+    precisely: "precisely",
+    dignityEval: "Dignity evaluates as",
+    vedicOracleOutput: "Vedic Oracle Translation Output",
+    stopRecitation: "Stop Recitation",
+    hearShastra: "Hear Shastra Recitation",
+    downloadPDF: "Download PDF Report",
+    aligningCoords: "Aligning Astronomical Coordinates...",
+    utama: "Utama (Devine Concord)",
+    madhyama: "Madhyama (Balanced Harmony)",
+    kanishta: "Kanishta (High Lessons)",
+    calculationResolves: "Ashtakoot calculation resolves a score of {score} out of 36, showing a relationship built upon {vibe}.",
+    outstandingResonance: "outstanding vibrational empathy and natural spiritual resonance",
+    healthyLessons: "healthy structural lessons requiring conscious commitment",
+    deepRapport: "Deep mental rapport and matching biological frequencies.",
+    resilienceNavigation: "Resilience through navigation of differences.",
+    sharedGrounding: "Establish shared grounding routines, meditate together, and practice open communicative transparency.",
+    continueHonoring: "Continue honoring mutual space and artistic alignment.",
+    jointPyExplanation: "Joint Personal Year reduces to {pyJoint} ({labelJoint}). Partner A is in Year {pyA}, while Partner B is in Year {pyB}. This creates a {resonance} for marriage commitment.",
+    highlyCoordinated: "highly coordinated energetic resonance",
+    balancedSpiritual: "balanced spiritual timing",
+    karmicLearning: "karmic learning cycle",
+    focusAExplanation: "{name} is in Personal Year {py} ({label}). {text}",
+    focusBExplanation: "{name} is in Personal Year {py} ({label}). {text}",
+    primaryBestExplanation: "Excellent alignment of natal frequencies and transits indicates that the year {year} offers the highest spiritual, mental, and physical support for solemnizing your union.",
+    astroVibrations: "Astro Vibrations",
+    venusJupiterConcord: "Venus-Jupiter Concord",
+    rapportLevel: "Rapport Level",
+    exquisiteBlessed: "Exquisite & Blessed",
+    doshaResolution: "Dosha Resolution",
+    neutralizedShanti: "Neutralized via Shanti",
+  },
+  hi: {
+    badge: "दिव्य सामंजस्य",
+    singleKundali: "एकल कुंडली",
+    coupleMatching: "युगल मिलान",
+    partnerADetails: "साथी A का विवरण",
+    nativeBirthDetails: "मूल जन्म विवरण (विवाह भविष्यवाणी के लिए)",
+    lagnaBirthDetails: "लग्न जन्म विवरण",
+    firstNativeCoordMap: "प्रथम जन्म कुंडली मानचित्र",
+    secondNativeCoordMap: "द्वितीय जन्म कुंडली मानचित्र",
+    firstName: "पहला नाम",
+    dateOfBirth: "जन्म तिथि",
+    timeOfBirth: "जन्म समय",
+    placeOfBirth: "जन्म स्थान",
+    partnerBDetails: "साथी B का विवरण",
+    secondName: "दूसरा नाम",
+    resolvingAlignment: "सामंजस्य स्थापित किया जा रहा है...",
+    predictMarriageTiming: "विवाह समय की भविष्यवाणी करें",
+    establishSynergyGrid: "तालमेल ग्रिड स्थापित करें",
+    ashtakootSuitability: "अष्टकूट अनुकूलता",
+    diagnosticFlashcards: "नैदानिक ​​फ़्लैशकार्ड",
+    astrologicalCharts: "ज्योतिषीय चार्ट",
+    vedicInterpretation: "वैदिक व्याख्या",
+    resonanceScore: "अनुकूलता स्कोर",
+    outOf36Gunas: "36 गुणों में से",
+    detailedAshtakoot: "विस्तृत अष्टकूट विश्लेषण",
+    points: "अंक",
+    calculateMarriageWindows: "अनुकूल विवाह समय की गणना करें",
+    marriageWindowsShastras: "प्राचीन वैदिक शास्त्रों और अंकदृष्टि ग्रहों के चक्रों (शुक्र 6, बृहस्पति 3 और चंद्रमा 2 के व्यक्तिगत वर्ष कंपन) पर आधारित।",
+    astrologicalMatrixLocked: "ज्योतिषीय चक्र बंद है",
+    auspiciousTimingMatrixDesc: "शुभ समय चक्र जन्म तिथियों, शुक्र और बृहस्पति के ग्रहीय संरेखण और व्यक्तिगत वर्ष चक्रों को मिलाकर अनुकूल विवाह समय को दर्शाता है।",
+    varnaCategory: "वर्ण (वर्ग)",
+    varnaSig: "वर: {boyVal}, वधू: {girlVal}। यह मानसिक स्वभाव और काम की अनुकूलता को दर्शाता है।",
+    vashyaCategory: "वश्य (नियंत्रण)",
+    vashyaSig: "वर: {boyVal}, वधू: {girlVal}। यह परस्पर आकर्षण और नियंत्रण को दर्शाता है।",
+    taraCategory: "तारा (भाग्य तारा)",
+    taraSig: "भाग्य और स्वास्थ्य पैटर्न। दैनिक भाग्य की अनुकूलता को दर्शाता है।",
+    yoniCategory: "योनि (शारीरिक अनुकूलता)",
+    yoniSig: "वर: {boyVal}, वधू: {girlVal}। शारीरिक और जैविक संरेखण तथा आकर्षण को दर्शाता है।",
+    grahaMaitriCategory: "ग्रह मैत्री (मित्रता)",
+    grahaMaitriSig: "वर स्वामी: {boyVal}, वधू स्वामी: {girlVal}। मानसिक समझ और मित्रता को दर्शाता है।",
+    ganaCategory: "गण (स्वभाव)",
+    ganaSig: "वर: {boyVal}, वधू: {girlVal}। स्वभाव और जीवन के प्रति दृष्टिकोण को दर्शाता है।",
+    bhakootCategory: "भकूट (भावनात्मक अनुकूलता)",
+    bhakootSig: "चंद्रमा दूरी: {boyVal} भाव। यह भावनात्मक तरंगों की अनुकूलता को दर्शाता है। {statusText}",
+    bhakootDefect: "भकूट दोष उपस्थित है (साझा करने में सबक)।",
+    bhakootAuspicious: "शुभ भकूट संरेखण।",
+    nadiCategory: "नाड़ी (शारीरिक ऊर्जा)",
+    nadiSig: "वर नाड़ी: {boyVal}, वधू नाड़ी: {girlVal}। जैविक तरंग पैटर्न। {statusText}",
+    nadiDefect: "नाड़ी दोष उपस्थित है (ऊर्जा संतुलन में सबक)।",
+    nadiAuspicious: "शुभ नाड़ी संरेखण।",
+    py6Label: "अत्यंत शुभ (शुक्र चक्र)",
+    py6Text: "शुक्र द्वारा संचालित वर्ष, जो प्रेम, घरेलू सद्भाव और विवाह संबंधों का प्रतीक है। प्रतिबद्धताओं के लिए सर्वोत्तम।",
+    py3Label: "शुभ विस्तार (बृहस्पति चक्र)",
+    py3Text: "बृहस्पति द्वारा संचालित वर्ष, जो दैवीय कृपा, भाग्य और ज्ञान का प्रतिनिधित्व करता है। आशीर्वाद के लिए अनुकूल।",
+    py2Label: "सामंजस्यपूर्ण संघ (चंद्र चक्र)",
+    py2Text: "चंद्रमा का वर्ष, जो सहानुभूति, सहयोग और भावनात्मक स्थिरता पर ध्यान केंद्रित करता है। गहरे संबंधों के लिए आदर्श।",
+    py1Label: "नई शुरुआत (सूर्य चक्र)",
+    py1Text: "सूर्य का वर्ष, जो नए बदलावों, नेतृत्व और सामाजिक स्थिति में परिवर्तन का प्रतीक है। जीवन के नए चरणों के लिए अनुकूल।",
+    py9Label: "कर्म मील का पत्थर (मंगल चक्र)",
+    py9Text: "मंगल का वर्ष, जो महत्वपूर्ण प्रतिबद्धताओं की तैयारी के लिए पुराने 9-वर्षीय चक्रों को बंद करता है।",
+    py5Label: "गतिशील अनुकूलन (बुध चक्र)",
+    py5Text: "बुध का वर्ष, जो संचार, यात्रा और समझौतों का संचालन करता है। विस्तृत योजना के साथ अच्छा है।",
+    py8Label: "कर्म संतुलन (शनि चक्र)",
+    py8Text: "शनि का वर्ष, जो जिम्मेदारियों, कर्तव्यों और स्थिर प्रगति को दर्शाता है। विवाह के लिए सुरक्षित यदि धैर्य है।",
+    py4Label: "अप्रत्याशित बदलाव (राहु चक्र)",
+    py4Text: "राहु का वर्ष, जो अप्रत्याशित मोड़ों या अचानक संबंधों को प्रेरित करता है। अत्यधिक सावधानी और स्पष्ट कानूनी सीमाओं की आवश्यकता है।",
+    pyOtherLabel: "आद्यात्मिक आत्मनिरीक्षण (केतु चक्र)",
+    pyOtherText: "केतु का वर्ष, जो आंतरिक कार्य और आध्यात्मिक चिंतन का आह्वान करता है। सरल शांत समारोहों के लिए सबसे उपयुक्त।",
+    upcomingTimeline: "आगामी 7-वर्षीय विवाह समय संरेखण",
+    primaryOptimalWindow: "प्राथमिक अनुकूल समय",
+    personalYearCycle: "व्यक्तिगत वर्ष चक्र",
+    signDisplayLabel: "राशि प्रदर्शन:",
+    d1Chart: "D1 राशि चार्ट",
+    d9Chart: "D9 नवांश चार्ट",
+    interBadgeInfo: "इंटरएक्टिव चार्ट जानकारी",
+    placementLabel: "ग्रह स्थिति",
+    residesIn: "स्थित है",
+    precisely: "सटीक रूप से",
+    dignityEval: "गरिमा का मूल्यांकन",
+    vedicOracleOutput: "वैदिक ओरेकल अनुवाद आउटपुट",
+    stopRecitation: "वाचन रोकें",
+    hearShastra: "शास्त्र वाचन सुनें",
+    downloadPDF: "पीडीएफ रिपोर्ट डाउनलोड करें",
+    aligningCoords: "खगोलीय निर्देशांकों को संरेखित किया जा रहा है...",
+    utama: "उत्तम (दिव्य मिलाप)",
+    madhyama: "मध्यम (संतुलित सामंजस्य)",
+    kanishta: "कनिष्ठ (उच्च कर्म सबक)",
+    calculationResolves: "अष्टकूट गणना 36 में से {score} का स्कोर देती है, जो {vibe} पर आधारित संबंध को दर्शाता है।",
+    outstandingResonance: "असाधारण भावनात्मक सहानुभूति और प्राकृतिक आध्यात्मिक प्रतिध्वनि",
+    healthyLessons: "सचेत प्रतिबद्धता की आवश्यकता वाले स्वस्थ संरचनात्मक सबक",
+    deepRapport: "गहरा मानसिक तालमेल और मेल खाते जैविक संबंध।",
+    resilienceNavigation: "मतभेदों को सुलझाने के माध्यम से लचीलापन।",
+    sharedGrounding: "साझा ध्यान और आध्यात्मिक दिनचर्या अपनाएं तथा खुली बातचीत का अभ्यास करें।",
+    continueHonoring: "आपसी सम्मान और रचनात्मक तालमेल बनाए रखें।",
+    jointPyExplanation: "संयुक्त व्यक्तिगत वर्ष घटकर {pyJoint} ({labelJoint}) हो जाता है। साथी A वर्ष {pyA} में है, जबकि साथी B वर्ष {pyB} में है। यह विवाह के लिए {resonance} बनाता है।",
+    highlyCoordinated: "अत्यधिक समन्वित ऊर्जावान प्रतिध्वनि",
+    balancedSpiritual: "संतुलित आध्यात्मिक समय",
+    karmicLearning: "कर्म सीखने का चक्र",
+    focusAExplanation: "{name} व्यक्तिगत वर्ष {py} ({label}) में है। {text}",
+    focusBExplanation: "{name} व्यक्तिगत वर्ष {py} ({label}) में है। {text}",
+    primaryBestExplanation: "जन्म कालीन आवृत्तियों और गोचर का उत्कृष्ट संरेखण यह दर्शाता है कि वर्ष {year} आपके विवाह के लिए सर्वोच्च आध्यात्मिक, मानसिक और शारीरिक समर्थन प्रदान करता है।",
+    astroVibrations: "खगोलीय तरंगें",
+    venusJupiterConcord: "शुक्र-बृहस्पति मिलन",
+    rapportLevel: "सामंजस्य स्तर",
+    exquisiteBlessed: "अति उत्तम और धन्य",
+    doshaResolution: "दोष निवारण",
+    neutralizedShanti: "शांति अनुष्ठान द्वारा संतुलित",
+  },
+  bn: {
+    badge: "স্বর্গীয় সামঞ্জস্য",
+    singleKundali: "একক কুন্ডলী",
+    coupleMatching: "যুগল মিলন",
+    partnerADetails: "অংশীদার A এর বিবরণ",
+    nativeBirthDetails: "স্থানীয় জন্ম বিবরণ (বিবাহের পূর্বাভাসের জন্য)",
+    lagnaBirthDetails: "লগ্ন জন্ম বিবরণ",
+    firstNativeCoordMap: "প্রথম জন্ম মানচিত্র",
+    secondNativeCoordMap: "দ্বিতীয় জন্ম মানচিত্র",
+    firstName: "প্রথম নাম",
+    dateOfBirth: "জন্ম তারিখ",
+    timeOfBirth: "জন্ম সময়",
+    placeOfBirth: "জন্মস্থান",
+    partnerBDetails: "অংশীদার B এর বিবরণ",
+    secondName: "দ্বিতীয় নাম",
+    resolvingAlignment: "সারিবদ্ধকরণ করা হচ্ছে...",
+    predictMarriageTiming: "বিবাহের সময় পূর্বাভাস করুন",
+    establishSynergyGrid: "সামঞ্জস্য গ্রিড স্থাপন করুন",
+    ashtakootSuitability: "অষ্টকূটের উপযুক্ততা",
+    diagnosticFlashcards: "নিদানিক ফ্ল্যাশকার্ড",
+    astrologicalCharts: "জ্যোতিষীয় চার্ট",
+    vedicInterpretation: "বৈদিক ব্যাখ্যা",
+    resonanceScore: "অনুরণন স্কোর",
+    outOf36Gunas: "৩৬ গুণের মধ্যে",
+    detailedAshtakoot: "বিস্তারিত ৮-গুণ অষ্টকূট বিশ্লেষণ",
+    points: "পয়েন্ট",
+    calculateMarriageWindows: "অনুকূল বিবাহের সময় গণনা করুন",
+    marriageWindowsShastras: "প্রাচীন বৈদিক শাস্ত্র এবং অঙ্কদৃষ্টির গ্রহের চক্রের উপর ভিত্তি করে (শুক্র ৬, বৃহস্পতি ৩ এবং চন্দ্র ২ এর ব্যক্তিগত বছর কম্পন)।",
+    astrologicalMatrixLocked: "জ্যোতিষীয় চক্র লক করা আছে",
+    auspiciousTimingMatrixDesc: "শুভ সময় চক্র জন্ম তারিখ, শুক্র ও বৃহস্পতির গ্রহের অবস্থান এবং ব্যক্তিগত বছরের চক্রকে একত্রিত করে অনুকূল বিবাহের সময় প্রকাশ করে।",
+    varnaCategory: "বর্ণ (শ্রেণী)",
+    varnaSig: "বর: {boyVal}, কনে: {girlVal}। কাজ এবং অহং-বুদ্ধির সামঞ্জস্য বোঝায়।",
+    vashyaCategory: "বশ্য (নিয়ন্ত্রণ)",
+    vashyaSig: "বর: {boyVal}, কনে: {girlVal}। আকর্ষণ এবং আধিপত্যের সামঞ্জস্য বোঝায়।",
+    taraCategory: "তারা (ভাগ্য তারকা)",
+    taraSig: "শুভ তারকা সামঞ্জস্য। দৈনিক ভাগ্য এবং স্বাস্থ্য গঠন নির্দেশ করে।",
+    yoniCategory: "যোনি (শারীরিক সামঞ্জস্য)",
+    yoniSig: "বর: {boyVal}, কনে: {girlVal}। শারীরিক আকর্ষণ এবং জৈবিক সামঞ্জস্য বোঝায়।",
+    grahaMaitriCategory: "গ্রহ মৈত্রী (বন্ধুত্ব)",
+    grahaMaitriSig: "বর অধিপতি: {boyVal}, কনে অধিপতি: {girlVal}। মানসিক সখ্যতা এবং বন্ধুত্ব নির্দেশ করে।",
+    ganaCategory: "গণ (স্বভাব)",
+    ganaSig: "বর: {boyVal}, কনে: {girlVal}। মানসিক স্বভাব এবং জীবন দর্শনের মিল বোঝায়।",
+    bhakootCategory: "ভকূট (আবেগীয় মিল)",
+    bhakootSig: "চন্দ্রের দূরত্ব: {boyVal} ঘর। আবেগগত সামঞ্জস্য বোঝায়। {statusText}",
+    bhakootDefect: "ভকূট দোষ উপস্থিত আছে (শেয়ার করার শিক্ষা)।",
+    bhakootAuspicious: "শুভ ভকূট মিলন।",
+    nadiCategory: "নাড়ী (শারীরিক শক্তি)",
+    nadiSig: "বর নাড়ী: {boyVal}, কনে নাড়ী: {girlVal}। জৈবিক শক্তি তরঙ্গ নির্দেশ করে। {statusText}",
+    nadiDefect: "নাড়ী দোষ উপস্থিত আছে (শক্তি ভারসাম্যের শিক্ষা)।",
+    nadiAuspicious: "শুভ নাড়ী মিলন।",
+    py6Label: "অত্যন্ত শুভ (শুক্র চক্র)",
+    py6Text: "শুক্র দ্বারা পরিচালিত বছর, যা প্রেম, পারিবারিক শান্তি এবং বিবাহের প্রতীক। দীর্ঘস্থায়ী প্রতিশ্রুতির জন্য সেরা সময়।",
+    py3Label: "শুভ সম্প্রসারণ (বৃহস্পতি চক্র)",
+    py3Text: "বৃহস্পতি দ্বারা পরিচালিত বছর, যা দৈব কৃপা, ভাগ্য এবং আধ্যাত্মিক বৃদ্ধির প্রতীক। শুভ কাজের জন্য অনুকূল।",
+    py2Label: "সামঞ্জস্যপূর্ণ মিলন (চন্দ্র চক্র)",
+    py2Text: "চন্দ্রের বছর, যা সহযোগিতা, মানসিক গভীরতা এবং স্নেহের উপর গুরুত্ব দেয়। যৌথ জীবন শুরুর জন্য আদেশ।",
+    py1Label: "নতুন সূচনা (সূর্য চক্র)",
+    py1Text: "সূর্যের বছর, যা নতুন সূচনা, নেতৃত্ব এবং সামাজিক অবস্থানের পরিবর্তনকে নির্দেশ করে। নতুন জীবন শুরু করার জন্য অনুকূল।",
+    py9Label: "কৰ্ম মাইলস্টোন (মঙ্গল চক্র)",
+    py9Text: "মঙ্গলের বছর, যা পুরানো ৯ বছরের চক্র শেষ করে এবং নতুন প্রতিশ্রুতির প্রস্তুতি দেয়।",
+    py5Label: "গতিশীল রূপান্তর (বুধ চক্র)",
+    py5Text: "বুধের বছর, যা যোগাযোগ, ভ্রমণ এবং চুক্তি নিয়ন্ত্রণ করে। বিস্তারিত পরিকল্পনার সাথে ভালো।",
+    py8Label: "কৰ্ম সমতা (শনি চক্র)",
+    py8Text: "শনির বছর, যা দায়িত্ব, কর্তব্য এবং স্থির প্রগতি নির্দেশ করে। ধৈর্য ধরলে বিয়ের জন্য উপযুক্ত।",
+    py4Label: "অপ্রত্যাশিত পরিবর্তন (রাহু চক্র)",
+    py4Text: "রাহুর বছর, যা অপ্রত্যাশিত ঘটনা বা আকস্মিক সম্পর্কের সৃষ্টি করে। চরম সতর্কতা প্রয়োজন।",
+    pyOtherLabel: "আধ্যাত্মিক আত্মদর্শন (কেতু চক্র)",
+    pyOtherText: "কেতুর বছর, যা অভ্যন্তরীণ কাজ এবং আধ্যাত্মিক ধ্যানের জন্য উপযুক্ত। নিরিবিলি শান্ত অনুষ্ঠানের জন্য সেরা।",
+    upcomingTimeline: "আগামী ৭ বছরের বিবাহের সময় সামঞ্জস্য",
+    primaryOptimalWindow: "প্রাথমিক অনুকূল সময়",
+    personalYearCycle: "ব্যক্তিগত বছর চক্র",
+    signDisplayLabel: "রাশি প্রদর্শন:",
+    d1Chart: "D1 রাশি চার্ট",
+    d9Chart: "D9 নবমাংশ চার্ট",
+    interBadgeInfo: "ইন্টারেক্টিভ চার্ট তথ্য",
+    placementLabel: "গ্রহের অবস্থান",
+    residesIn: "অবস্থিত",
+    precisely: "যথাযথভাবে",
+    dignityEval: "মর্যাদা মূল্যায়ন",
+    vedicOracleOutput: "বৈদিক ওরাকল অনুবাদ আউটপুট",
+    stopRecitation: "আবৃত্তি বন্ধ করুন",
+    hearShastra: "শাস্ত্র আবৃত্তি শুনুন",
+    downloadPDF: "পিডিএফ রিপোর্ট ডাউনলোড করুন",
+    aligningCoords: "জ্যোতিষীয় স্থানাঙ্ক সামঞ্জস্য করা হচ্ছে...",
+    utama: "উত্তম (স্বর্গীয় মিলন)",
+    madhyama: "মধ্যম (ভারসাম্যপূর্ণ সামঞ্জস্য)",
+    kanishta: "কনিষ্ঠ (উচ্চ কৰ্ম শিক্ষা)",
+    calculationResolves: "অষ্টকূটের গণনা ৩৬ এর মধ্যে {score} ফলাফল দেয়, যা {vibe} এর উপর ভিত্তি করে সম্পর্ককে নির্দেশ করে।",
+    outstandingResonance: "অসাধারণ মানসিক সামঞ্জস্য এবং প্রাকৃতিক আধ্যাত্মিক অনুরণন",
+    healthyLessons: "সচেতন প্রতিশ্রুতির প্রয়োজনীয়তার সাথে সুস্থ গঠনমূলক শিক্ষা",
+    deepRapport: "গভীর মানসিক সম্পর্ক এবং মানানসই জৈবিক তরঙ্গদৈর্ঘ্য।",
+    resilienceNavigation: "পার্থক্য কাটিয়ে ওঠার মাধ্যমে স্থিতিস্থাপকতা গড়ে তোলা।",
+    sharedGrounding: "একত্রে ধ্যান করুন, আধ্যাত্মিক অভ্যাস গড়ে তুলুন এবং খোলামেলা যোগাযোগ রাখুন।",
+    continueHonoring: "পারস্পরিক শ্রদ্ধা এবং গঠনমূলক সামঞ্জস্য বজায় রাখুন।",
+    jointPyExplanation: "যৌথ ব্যক্তিগত বছর কমে {pyJoint} ({labelJoint}) হয়। অংশীদার A বছর {pyA} এ এবং অংশীদার B বছর {pyB} এ রয়েছে। এটি বিবাহের জন্য {resonance} সৃষ্টি করে।",
+    highlyCoordinated: "অত্যন্ত সমন্বিত শক্তির অনুরণন",
+    balancedSpiritual: "ভারসাম্যপূর্ণ আধ্যাত্মিক সময়",
+    karmicLearning: "কৰ্ম শিক্ষার চক্র",
+    focusAExplanation: "{name} ব্যক্তিগত বছর {py} ({label}) এ আছে। {text}",
+    focusBExplanation: "{name} ব্যক্তিগত বছর {py} ({label}) এ আছে। {text}",
+    primaryBestExplanation: "জন্মকালীন কম্পন এবং গোচরের চমৎকার সামঞ্জস্য নির্দেশ করে যে {year} সালটি আপনার বিবাহের জন্য সর্বোচ্চ আধ্যাত্মিক, মানসিক এবং শারীরিক সমর্থন প্রদান করবে।",
+    astroVibrations: "জ্যোতিষীয় কম্পন",
+    venusJupiterConcord: "শুক্র-বৃহস্পতি মিলন",
+    rapportLevel: "সম্পর্কের স্তর",
+    exquisiteBlessed: "অত্যন্ত চমৎকার এবং ধন্য",
+    doshaResolution: "দোষ নিবারণ",
+    neutralizedShanti: "শান্তি পূজার মাধ্যমে নিষ্ক্রিয়",
+  },
+  mr: {
+    badge: "दैवी संवाद",
+    singleKundali: "एकल कुंडली",
+    coupleMatching: "युगल जुळवणी",
+    partnerADetails: "जोडीदार A तपशील",
+    nativeBirthDetails: "मूळ जन्म तपशील (लग्न भविष्यासाठी)",
+    lagnaBirthDetails: "लग्न जन्म तपशील",
+    firstNativeCoordMap: "प्रथम जन्म कुंडली नकाशा",
+    secondNativeCoordMap: "द्वितीय जन्म कुंडली नकाशा",
+    firstName: "पहिले नाव",
+    dateOfBirth: "जन्म तारीख",
+    timeOfBirth: "जन्म वेळ",
+    placeOfBirth: "जन्म ठिकाण",
+    partnerBDetails: "जोडीदार B तपशील",
+    secondName: "दुसरे नाव",
+    resolvingAlignment: "समन्वय साधत आहे...",
+    predictMarriageTiming: "लग्न वेळेचा अंदाज लावा",
+    establishSynergyGrid: "सिनर्जी ग्रीड स्थापित करा",
+    ashtakootSuitability: "अष्टकूट अनुकूलता",
+    diagnosticFlashcards: "निदान फ्लॅशकार्ड्स",
+    astrologicalCharts: "ज्योतिषीय तक्ते",
+    vedicInterpretation: "वैदिक विश्लेषण",
+    resonanceScore: "अनुकूलता स्कोअर",
+    outOf36Gunas: "३६ गुणांपैकी",
+    detailedAshtakoot: "सविस्तर ८-गुण अष्टकूट विश्लेषण",
+    points: "गुण",
+    calculateMarriageWindows: "अनुकूल विवाह कालावधी शोधा",
+    marriageWindowsShastras: "प्राचीन वैदिक शास्त्रे आणि अंकशास्त्राच्या ग्रहांच्या चक्रांवर आधारित (शुक्र ६, गुरू ३ आणि चंद्र २ चे वैयक्तिक वर्ष स्पंदन).",
+    astrologicalMatrixLocked: "ज्योतिषीय चक्र लॉक केले आहे",
+    auspiciousTimingMatrixDesc: "शुभ वेळ चक्र जन्म तारखा, शुक्र आणि गुरूची स्थिती आणि वैयक्तिक वर्ष चक्र एकत्र करून अनुकूल विवाहाची वेळ दर्शवते.",
+    varnaCategory: "वर्ण (वर्ग)",
+    varnaSig: "वर: {boyVal}, वधू: {girlVal}। हे मानसिक स्वभाव आणि कार्य अनुकूलता दर्शवते.",
+    vashyaCategory: "वश्य (नियंत्रण)",
+    vashyaSig: "वर: {boyVal}, वधू: {girlVal}। हे उप-चेतन आकर्षण आणि नियंत्रण दर्शवते.",
+    taraCategory: "तारा (नक्षत्र)",
+    taraSig: "शुभ नक्षत्र सुसंगतता मॅपिंग. दैनिक भाग्य आणि आरोग्य चक्र दर्शवते.",
+    yoniCategory: "योनि (शारीरिक सुसंगतता)",
+    yoniSig: "वर: {boyVal}, वधू: {girlVal}। शारीरिक आकर्षण आणि जैविक सुसंगतता दर्शवते.",
+    grahaMaitriCategory: "ग्रह मैत्री",
+    grahaMaitriSig: "वर स्वामी: {boyVal}, वधू स्वामी: {girlVal}। परस्पर समजूतदारपणा आणि मैत्री दर्शवते.",
+    ganaCategory: "गण (स्वभाव)",
+    ganaSig: "वर: {boyVal}, वधू: {girlVal}। मानसिक स्वभाव आणि जीवनाकडे पाहण्याचा दृष्टिकोन दर्शवतो.",
+    bhakootCategory: "भकूट (भावनिक सुसंगतता)",
+    bhakootSig: "चंद्र अंतर: {boyVal} भाव. भावनिक सुसंगतता दर्शवते. {statusText}",
+    bhakootDefect: "भकूट दोष आढळला आहे (अडचणी आणि संवाद सुधारण्याचे धडे).",
+    bhakootAuspicious: "शुभ भकूट संरेखन.",
+    nadiCategory: "नाडी (शारीरिक ऊर्जा)",
+    nadiSig: "वर नाडी: {boyVal}, वधू नाडी: {girlVal}। जैविक लहरींची रचना. {statusText}",
+    nadiDefect: "नाडी दोष आढळला आहे (ऊर्जा संतुलित करण्याचे धडे).",
+    nadiAuspicious: "शुभ नाडी संरेखन.",
+    py6Label: "अतिशय शुभ (शुक्र चक्र)",
+    py6Text: "शुक्राच्या प्रभावाखालील वर्ष, जे प्रेम, कौटुंबिक सौख्य आणि विवाहाचे प्रतीक आहे. वचनबद्धतेसाठी सर्वोत्तम.",
+    py3Label: "शुभ विस्तार (गुरू चक्र)",
+    py3Text: "गुरूच्या प्रभावाखालील वर्ष, जे ज्ञान आणि भाग्याचे प्रतिनिधित्व करते. आशीर्वादासाठी अनुकूल.",
+    py2Label: "समन्वयी संघ (चंद्र चक्र)",
+    py2Text: "चंद्राचे वर्ष, जे सहानुभूती, सहकार्य आणि भावनिक स्थिरतेवर लक्ष केंद्रित करते. नाते दृढ करण्यासाठी आदर्श.",
+    py1Label: "नवीन सुरुवात (सूर्य चक्र)",
+    py1Text: "सूर्याचे वर्ष, जे नवीन बदल, नेतृत्व आणि सामाजिक स्थितीतील बदल दर्शवते. नवीन जीवन सुरू करण्यासाठी अनुकूल.",
+    py9Label: "कर्म मैलाचा दगड (मंगळ चक्र)",
+    py9Text: "मंगळाचे वर्ष, जे नवीन वचनबद्धतेच्या तयारीसाठी जुने ९-वर्षांचे चक्र पूर्ण करते.",
+    py5Label: "गतिशील अनुकूलन (बुध चक्र)",
+    py5Text: "बुधाचे वर्ष, जे संवाद, प्रवास आणि करारांचे व्यवस्थापन करते. सविस्तर नियोजनासाठी चांगले.",
+    py8Label: "कर्म संतुलन (शनि चक्र)",
+    py8Text: "शनिचे वर्ष, जे जबाबदाऱ्या, कर्तव्ये आणि स्थिर प्रगती दर्शवते. संयम राखल्यास लग्नासाठी सुरक्षित.",
+    py4Label: "अनपेक्षित बदल (राहू चक्र)",
+    py4Text: "राहूचे वर्ष, जे अनपेक्षित वळणे किंवा अचानक नातेसंबंध निर्माण करू शकते. अत्यंत सावधगिरी बाळगणे आवश्यक.",
+    pyOtherLabel: "आध्यात्मिक आत्मपरीक्षण (केतू चक्र)",
+    pyOtherText: "केतूचे वर्ष, जे अंतर्गत प्रगती आणि आध्यात्मिक चिंतनाची गरज दर्शवते. साध्या, शांत सोहळ्यासाठी योग्य.",
+    upcomingTimeline: "आगामी ७ वर्षांचे विवाह सुसंगतता चक्र",
+    primaryOptimalWindow: "प्राथमिक अनुकूल कालावधी",
+    personalYearCycle: "वैयक्तिक वर्ष चक्र",
+    signDisplayLabel: "રાશિ પ્રદર્શન:",
+    d1Chart: "D1 રાશી તક્તા",
+    d9Chart: "D9 नवमांश तक्ता",
+    interBadgeInfo: "परस्परसंवादी तक्ता माहिती",
+    placementLabel: "ग्रहांची स्थिती",
+    residesIn: "स्थित आहे",
+    precisely: "अचूकपणे",
+    dignityEval: "दर्जा मूल्यमापन",
+    vedicOracleOutput: "वैदिक ओरेकल विश्लेषण",
+    stopRecitation: "वाचन थांबवा",
+    hearShastra: "शास्त्र वाचन ऐका",
+    downloadPDF: "અહવાલ ડાઉનલોડ કરા",
+    aligningCoords: "खगोलीय निर्देशक सुसंगत करत आहे...",
+    utama: "उत्तम (दैवी मिलाप)",
+    madhyama: "मध्यम (संतुलित सुसंगतता)",
+    kanishta: "कनिष्ठ (कर्म धडे)",
+    calculationResolves: "अष्टकूट गणना ३६ पैकी {score} गुण दर्शवते, जे {vibe} वर आधारित नाते दर्शवते.",
+    outstandingResonance: "असाधारण भावनिक नाते आणि नैसर्गिक आध्यात्मिक प्रतिध्वनी",
+    healthyLessons: "जाणीवपूर्वक वचनबद्धतेची आवश्यकता असलेले निरोगी रचनात्मक धडे",
+    deepRapport: "खोल मानसिक समन्वय आणि जैविक नातेसंबंध.",
+    resilienceNavigation: "मतभेद सोडवून नात्यातील लवचिकता वाढवणे.",
+    sharedGrounding: "एकत्र ध्यान करा, आध्यात्मिक साधना करा आणि संवाद खुला ठेवा.",
+    continueHonoring: "परस्पर आदर आणि विधायक समन्वय टिकवून ठेवा.",
+    jointPyExplanation: "संयुक्त वैयक्तिक वर्ष कमी होऊन {pyJoint} ({labelJoint}) होते. जोडीदार A वर्ष {pyA} मध्ये आहे, तर जोडीदार B वर्ष {pyB} मध्ये आहे. हे लग्नासाठी {resonance} निर्माण करते.",
+    highlyCoordinated: "अत्यंत समन्वित ऊर्जा प्रतिध्वनी",
+    balancedSpiritual: "संतुलित आध्यात्मिक वेळ",
+    karmicLearning: "कर्म शिकण्याचे चक्र",
+    focusAExplanation: "{name} व्यक्तिगत वर्ष {py} ({label}) मध्ये आहे. {text}",
+    focusBExplanation: "{name} व्यक्तिगत वर्ष {py} ({label}) मध्ये आहे. {text}",
+    primaryBestExplanation: "जन्मकालीन लहरी आणि गोचर ग्रहांचे उत्कृष्ट संरेखन दर्शवते की {year} हे वर्ष तुमच्या लग्नासाठी सर्वोच्च आध्यात्मिक, मानसिक आणि शारीरिक आधार देईल.",
+    astroVibrations: "खगोलीय स्पंदने",
+    venusJupiterConcord: "शुक्र-गुरू मिलन",
+    rapportLevel: "सुसंगतता पातळी",
+    exquisiteBlessed: "अतिशय उत्कृष्ट आणि धन्य",
+    doshaResolution: "दोष निवारण",
+    neutralizedShanti: "शांतता विधीद्वारे संतुलित",
+  },
+  gu: {
+    badge: "દિવ્ય મેળાવ",
+    singleKundali: "એકલ કુંડળી",
+    coupleMatching: "યુગલ મિલન",
+    partnerADetails: "ભાગીદાર A વિગતો",
+    nativeBirthDetails: "મૂળ જન્મ વિગતો (લગ્ન ભવિષ્યવાણી માટે)",
+    lagnaBirthDetails: "લગ્ન જન્મ વિગતો",
+    firstNativeCoordMap: "પ્રથમ જન્મ કુંડળી નકશો",
+    secondNativeCoordMap: "દ્વિતીય જન્મ કુંડળી નકશો",
+    firstName: "પ્રથમ નામ",
+    dateOfBirth: "જન્મ તારીખ",
+    timeOfBirth: "જન્મ સમય",
+    placeOfBirth: "જન્મ સ્થાન",
+    partnerBDetails: "ભાગીદાર B વિગતો",
+    secondName: "બીજું નામ",
+    resolvingAlignment: "સુસંગતતા મેળવવામાં આવી રહી છે...",
+    predictMarriageTiming: "લગ્ન સમયની આગાહી કરો",
+    establishSynergyGrid: "સુમેળ ગ્રીડ સ્થાપિત કરો",
+    ashtakootSuitability: "અષ્ટકૂટ સુમેળ",
+    diagnosticFlashcards: "નિદાન ફ્લેશકાર્ડ્સ",
+    astrologicalCharts: "જ્યોતિષીય ચાર્ટ્સ",
+    vedicInterpretation: "વૈદિક અર્થઘટન",
+    resonanceScore: "સુસંગતતા સ્કોર",
+    outOf36Gunas: "૩૬ ગુણોમાંથી",
+    detailedAshtakoot: "વિગતવાર ૮-ગણું અષ્ટકૂટ વિશ્લેષણ",
+    points: "ગુણો",
+    calculateMarriageWindows: "અનુકૂળ લગ્ન સમયગાળાની ગણતરી કરો",
+    marriageWindowsShastras: "પ્રાચીન વૈદિક શાસ્ત્રો અને અંકશાસ્ત્રના ગ્રહ ચક્રો પર આધારિત (શુક્ર ૬, ગુરુ ૩ અને ચંદ્ર ૨ ના વ્યક્તિગત વર્ષ સ્પંદનો).",
+    astrologicalMatrixLocked: "જ્યોતિષીય ચક્ર લૉક કરેલ છે",
+    auspiciousTimingMatrixDesc: "શુભ સમય ચક્ર જન્મ તારીખો, શુક્ર અને ગુરુની સ્થિતિ અને વ્યક્તિગત વર્ષ ચક્રોને જોડીને અનુકૂળ લગ્ન સમય દર્શાવે છે.",
+    varnaCategory: "વર્ણ (વર્ગ)",
+    varnaSig: "વર: {boyVal}, કન્યા: {girlVal}। આ માનસિક સ્વભાવ અને કાર્ય અનુકૂળતા દર્શાવે છે.",
+    vashyaCategory: "વશ્ય (નિયંત્રણ)",
+    vashyaSig: "વર: {boyVal}, કન્યા: {girlVal}। આ આકર્ષણ અને નિયંત્રણ દર્શાવે છે.",
+    taraCategory: "તારા (નક્ષત્ર)",
+    taraSig: "ભાગ્ય અને આરોગ્ય ચક્ર. દૈનિક નસીબ દર્શાવે છે.",
+    yoniCategory: "યોનિ (શારીરિક સુસંગતતા)",
+    yoniSig: "વર: {boyVal}, કન્યા: {girlVal}। શારીરિક આકર્ષણ અને જૈવિક સુસંગતતા દર્શાવે છે.",
+    grahaMaitriCategory: "ગ્રહ મૈત્રી",
+    grahaMaitriSig: "વર સ્વામી: {boyVal}, કન્યા સ્વામી: {girlVal}। માનસિક સમજ અને મિત્રતા દર્શાવે છે.",
+    ganaCategory: "ગણ (સ્વભાવ)",
+    ganaSig: "વર: {boyVal}, કન્યા: {girlVal}। સ્વભાવ અને જીવન પ્રત્યેનો દ્રષ્ટિકોણ દર્શાવે છે.",
+    bhakootCategory: "ભકૂટ (ભાવનાત્મક સુસંગતતા)",
+    bhakootSig: "ચંદ્ર અંતર: {boyVal} ભાવો. આ ભાવનાત્મક જોડાણ દર્શાવે છે. {statusText}",
+    bhakootDefect: "ભકૂટ દોષ હાજર છે (પાઠ શીખવાના છે).",
+    bhakootAuspicious: "શુભ ભકૂટ સંરેખણ.",
+    nadiCategory: "નાડી (શારીરિક ઉર્જા)",
+    nadiSig: "વર નાડી: {boyVal}, કન્યા નાડી: {girlVal}। જૈવિક તરંગ રચના. {statusText}",
+    nadiDefect: "નાડી દોષ હાજર છે (ઉર્જા સંતુલન પાઠ).",
+    nadiAuspicious: "શુભ નાડી સંરેખણ.",
+    py6Label: "અતિ શુભ (શુક્ર ચક્ર)",
+    py6Text: "શુક્ર દ્વારા સંચાલિત વર્ષ, જે પ્રેમ, કૌટુંબિક સંવાદિતા અને વિવાહ સંબંધ દર્શાવે છે. લગ્ન માટે સર્વોત્તમ સમય.",
+    py3Label: "શુભ વિસ્તરણ (ગુરુ ચક્ર)",
+    py3Text: "ગુરુ દ્વારા સંચાલિત વર્ષ, જે દિવ્ય કૃપા, નસીબ અને જ્ઞાનનું પ્રતિનિધિત્વ કરે છે. આશીર્વાદ મેળવવા માટે અનુકૂળ.",
+    py2Label: "સુમેળભર્યું જોડાણ (ચંદ્ર ચક્ર)",
+    py2Text: "ચંદ્રનું વર્ષ, જે સહાનુભૂતિ, સહકાર અને ભાવનાત્મક સ્થિરતા પર ધ્યાન કેન્દ્રિત કરે છે. સંબંધ ગાઢ બનાવવા શ્રેષ્ઠ.",
+    py1Label: "નવી શરૂઆત (સૂર્ય ચક્ર)",
+    py1Text: "સૂર્યનું વર્ષ, જે નવા ફેરફારો, નેતૃત્વ અને સામાજિક સ્થિતિમાં ફેરફારનું પ્રતીક છે. નવીન જીવન શરૂ કરવા માટે અનુકૂળ.",
+    py9Label: "કર્મ માઇલસ્ટોન (મંગળ ચક્ર)",
+    py9Text: "મંગળનું વર્ષ, જે નવી પ્રતિબદ્ધતાઓઓની તૈયારી માટે જૂના ૯ વર્ષના ચક્રોને બંધ કરે છે.",
+    py5Label: "ગતિશીલ અનુકૂલન (બુધ ચક્ર)",
+    py5Text: "બુધનું વર્ષ, જે સંચાર, મુસાફરી અને કરારોનું સંચાલન કરે છે. વિગતવાર આયોજન સાથે સારું.",
+    py8Label: "કર્મ સંતુલન (શનિ ચક્ર)",
+    py8Text: "શનિનું વર્ષ, જે જવાબદારીઓ, ફરજો અને સ્થિર પ્રગતિ દર્શાવે છે. ધીરજ હોય તો લગ્ન માટે યોગ્ય.",
+    py4Label: "અણધાર્યા ફેરફારો (રાહુ ચક્ર)",
+    py4Text: "રાહુનું વર્ષ, જે અણધાર્યા વળાંકો અથવા અચાનક સંબંધોને પ્રેરિત કરે છે. અત્યંત સાવચેતીની જરૂર છે.",
+    pyOtherLabel: "આધ્યાત્મિક આત્મનિરીક્ષણ (કેતુ ચક્ર)",
+    pyOtherText: "કેતુનું વર્ષ, જે આંતરિક કાર્ય અને આધ્યાત્મિક ચિંતનનું આહ્વાન કરે છે. શાંત સમારંભ માટે સૌથી યોગ્ય.",
+    upcomingTimeline: "આગામી ૭-વર્ષીય લગ્ન સમય સંરેખણ",
+    primaryOptimalWindow: "પ્રાથમિક અનુકૂળ સમયગાળો",
+    personalYearCycle: "વ્યક્તિગત વર્ષ ચક્ર",
+    signDisplayLabel: "રાશિ પ્રદર્શન:",
+    d1Chart: "D1 રાશિ ચાર્ટ",
+    d9Chart: "D9 નવાંશ ચાર્ટ",
+    interBadgeInfo: "ઇન્ટરેક્ટિવ ચાર્ટ માહિતી",
+    placementLabel: "ગ્રહોની સ્થિતિ",
+    residesIn: "સ્થિત છે",
+    precisely: "ચોક્કસપણે",
+    dignityEval: "ગરિમા મૂલ્યાંકન",
+    vedicOracleOutput: "વૈદિક ઓરેકલ અનુવાદ આઉટપુટ",
+    stopRecitation: "વાચન અટકાવો",
+    hearShastra: "શાસ્ત્ર વાચન સાંભળો",
+    downloadPDF: "પીડીએફ રિપોર્ટ ડાઉનલોડ કરો",
+    aligningCoords: "ખગોળીય નિર્દેશાંકો સુમેળ કરવામાં આવી રહ્યા છે...",
+    utama: "ઉત્તમ (દિવ્ય મિલાપ)",
+    madhyama: "મધ્યમ (સંતુલિત અનુકૂળતા)",
+    kanishta: "કનિષ્ઠ (ઉચ્ચ કર્મ પાઠ)",
+    calculationResolves: "અષ્ટકૂટ ગણતરી ૩૬ માંથી {score} ગુણ આપે છે, જે {vibe} પર આધારિત સંબંધ દર્શાવે છે.",
+    outstandingResonance: "અસાધારણ ભાવનાત્મક સહાનુભૂતિ અને કુદરતી આધ્યાત્મિક પડઘો",
+    healthyLessons: "સભાન પ્રતિબદ્ધતાની જરૂરિયાતવાળા સ્વસ્થ રચનાત્મક પાઠ",
+    deepRapport: "જિંદગીનો ઊંડો મેળાવ અને જૈવિક સંબંધો.",
+    resilienceNavigation: "મતભેદો ઉકેલવા દ્વારા સ્થિતિસ્थाપકતા.",
+    sharedGrounding: "સાથે ધ્યાન અને આધ્યાત્મિક દિનચર્યા અપનાવો અને ખુલ્લી ચર્ચા કરો.",
+    continueHonoring: "પરસ્પર આદર અને સર્જનાત્મક સુમેળ જાળવી રાખો.",
+    jointPyExplanation: "સંયુક્ત વ્યક્તિગત વર્ષ ઘટીને {pyJoint} ({labelJoint}) થાય છે. ભાગીદાર A વર્ષ {pyA} માં છે, જ્યારે ભાગીદાર B વર્ષ {pyB} માં છે. આ લગ્ન માટે {resonance} બનાવે છે.",
+    highlyCoordinated: "અત્યંત સંકલિત ઉર્જાનો પડઘો",
+    balancedSpiritual: "સંતુલિત આધ્યાત્મિક સમય",
+    karmicLearning: "કર્મ શીખવાનું ચક્ર",
+    focusAExplanation: "{name} વ્યક્તિગત વર્ષ {py} ({label}) માં છે. {text}",
+    focusBExplanation: "{name} વ્યક્તિગત વર્ષ {py} ({label}) માં છે. {text}",
+    primaryBestExplanation: "જન્મકાલીન સ્પંદનો અને ગોચર ગ્રહોનું ઉત્કૃષ્ટ સંરેખણ દર્શાવે છે કે વર્ષ {year} આપના લગ્ન માટે સર્વોચ્ચ આધ્યાત્મિક, માનસિક અને શારીરિક સમર્થન પ્રદાન કરશે.",
+    astroVibrations: "ખગોળીય સ્પંદનો",
+    venusJupiterConcord: "શુક્ર-ગુરુ મિલન",
+    rapportLevel: "અનુકૂળતા સ્તર",
+    exquisiteBlessed: "ખૂબ જ ઉત્કૃષ્ટ અને ધન્ય",
+    doshaResolution: "દોષ નિવારણ",
+    neutralizedShanti: "શાંતિ વિધિ દ્વારા સંતુલિત",
+  }
+};
+
 export default function CosmicConnections() {
   const { language, t, speak, speechState, activeReadingId, stopSpeaking } = useLanguage();
+  const txt = useMemo(() => synergyTextMap[language] || synergyTextMap.en, [language]);
 
   // Mode Selection: Single Person Chart vs Couple Matching vs Marriage Timing
   const [mode, setMode] = useState<"single" | "matching" | "marriage">("matching");
@@ -810,6 +1356,8 @@ export default function CosmicConnections() {
   const [partnerAPlace, setPartnerAPlace] = useState("Mumbai, India");
   const [partnerALat, setPartnerALat] = useState(19.076);
   const [partnerALon, setPartnerALon] = useState(72.877);
+  const [partnerATimezone, setPartnerATimezone] = useState("Asia/Kolkata");
+  const [showPartnerACoords, setShowPartnerACoords] = useState(false);
 
   // Partner B Parameters (Matching Mode Only)
   const [partnerBName, setPartnerBName] = useState("Beta");
@@ -818,6 +1366,8 @@ export default function CosmicConnections() {
   const [partnerBPlace, setPartnerBPlace] = useState("New Delhi, India");
   const [partnerBLat, setPartnerBLat] = useState(28.6139);
   const [partnerBLon, setPartnerBLon] = useState(77.209);
+  const [partnerBTimezone, setPartnerBTimezone] = useState("Asia/Kolkata");
+  const [showPartnerBCoords, setShowPartnerBCoords] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"suitability" | "dosha" | "charts" | "interpretation" | "marriage">("suitability");
   const [marriageAnalysisMode, setMarriageAnalysisMode] = useState<"joint" | "partnerA" | "partnerB">("joint");
@@ -1078,20 +1628,22 @@ export default function CosmicConnections() {
         const totalScore = varnaScore + vashyaScore + taraScore + yoniScore + grahaMaitriScore + ganaScore + bhakootScore + nadiScore;
 
         resultObj.overallScore = totalScore;
-        resultObj.tier = totalScore >= 28 ? "Utama (Devine Concord)" : totalScore >= 18 ? "Madhyama (Balanced Harmony)" : "Kanishta (High Lessons)";
-        resultObj.summary = `Ashtakoot calculation resolves a score of ${totalScore} out of 36, showing a relationship built upon ${totalScore >= 25 ? "outstanding vibrational empathy and natural spiritual resonance" : "healthy structural lessons requiring conscious commitment"}.`;
-        resultObj.strength = totalScore >= 20 ? "Deep mental rapport and matching biological frequencies." : "Resilience through navigation of differences.";
-        resultObj.growth = totalScore < 20 ? "Establish shared grounding routines, meditate together, and practice open communicative transparency." : "Continue honoring mutual space and artistic alignment.";
+        resultObj.tier = totalScore >= 28 ? txt.utama : totalScore >= 18 ? txt.madhyama : txt.kanishta;
+        resultObj.summary = txt.calculationResolves
+          .replace("{score}", String(totalScore))
+          .replace("{vibe}", totalScore >= 25 ? txt.outstandingResonance : txt.healthyLessons);
+        resultObj.strength = totalScore >= 20 ? txt.deepRapport : txt.resilienceNavigation;
+        resultObj.growth = totalScore < 20 ? txt.sharedGrounding : txt.continueHonoring;
 
         resultObj.kootaBreakdown = [
-          { category: "Varna (Class)", score: varnaScore, max: 1, significance: `Boy: ${varA.name}, Girl: ${varB.name}. Represents cosmic work and ego-intellect mapping.` },
-          { category: "Vashya (Control)", score: vashyaScore, max: 2, significance: `Boy: ${vGroupA}, Girl: ${vGroupB}. Represents sub-conscious attraction and dominance.` },
-          { category: "Tara (Destiny Star)", score: taraScore, max: 3, significance: `Auspicious star compatibility mapping. Represents daily luck and health patterns.` },
-          { category: "Yoni (Physical Harmony)", score: yoniScore, max: 4, significance: `Boy: ${yoniAnimA}, Girl: ${yoniAnimB}. Represents biological alignment and magnetic attraction.` },
-          { category: "Graha Maitri (Friendship)", score: grahaMaitriScore, max: 5, significance: `Boy Lord: ${lordA}, Girl Lord: ${lordB}. Represents friendship and general understanding.` },
-          { category: "Gana (Temperament)", score: ganaScore, max: 6, significance: `Boy: ${ganaA}, Girl: ${ganaB}. Represents mental temperament and outlook on life.` },
-          { category: "Bhakoot (Emotional Concord)", score: bhakootScore, max: 7, significance: `Moon distance: ${bDistance} sectors. Represents emotional waves compatibility. ${isBhakootDefect && !isBhakootCancelled ? "Bhakoot defect is present (lessons in sharing)." : "Auspicious Bhakoot."}` },
-          { category: "Nadi (Vitality Rhythms)", score: nadiScore, max: 8, significance: `Boy Nadi: ${nadiA}, Girl Nadi: ${nadiB}. Represents biological wave patterns. ${isNadiDefect && !isNadiCancelled ? "Nadi defect is present (lessons in energy balancing)." : "Auspicious Nadi."}` }
+          { category: txt.varnaCategory, score: varnaScore, max: 1, significance: txt.varnaSig.replace("{boyVal}", varA.name).replace("{girlVal}", varB.name) },
+          { category: txt.vashyaCategory, score: vashyaScore, max: 2, significance: txt.vashyaSig.replace("{boyVal}", vGroupA).replace("{girlVal}", vGroupB) },
+          { category: txt.taraCategory, score: taraScore, max: 3, significance: txt.taraSig },
+          { category: txt.yoniCategory, score: yoniScore, max: 4, significance: txt.yoniSig.replace("{boyVal}", yoniAnimA).replace("{girlVal}", yoniAnimB) },
+          { category: txt.grahaMaitriCategory, score: grahaMaitriScore, max: 5, significance: txt.grahaMaitriSig.replace("{boyVal}", lordA).replace("{girlVal}", lordB) },
+          { category: txt.ganaCategory, score: ganaScore, max: 6, significance: txt.ganaSig.replace("{boyVal}", ganaA).replace("{girlVal}", ganaB) },
+          { category: txt.bhakootCategory, score: bhakootScore, max: 7, significance: txt.bhakootSig.replace("{boyVal}", String(bDistance)).replace("{statusText}", isBhakootDefect && !isBhakootCancelled ? txt.bhakootDefect : txt.bhakootAuspicious) },
+          { category: txt.nadiCategory, score: nadiScore, max: 8, significance: txt.nadiSig.replace("{boyVal}", nadiA).replace("{girlVal}", nadiB).replace("{statusText}", isNadiDefect && !isNadiCancelled ? txt.nadiDefect : txt.nadiAuspicious) }
         ];
 
         // 7th House Lords Relationship textual lookup
@@ -1101,7 +1653,7 @@ export default function CosmicConnections() {
         const relationB = Pl[girl7Lord]?.friends.includes(boy7Lord) ? "Friend" : Pl[girl7Lord]?.enemies.includes(boy7Lord) ? "Enemy" : "Neutral";
         let relationText = "";
 
-        const relationTranslations: Record<string, { mutual: string, resistance: string, neutral: string }> = {
+        const relationTranslations = {
           hi: {
             mutual: "सप्तम भाव के स्वामी परस्पर ग्रह मित्र हैं, जो गहरे विकासात्मक समर्थन और आसान संकट समाधान का समर्थन करते हैं।",
             resistance: "सप्तम भाव के स्वामी ऊर्जावान ग्रहीय प्रतिरोध प्रस्तुत करते हैं, जो भिन्न दृष्टिकोणों को संरेखित करने के लिए सचेत बातचीत का सुझाव देते हैं।",
@@ -1227,32 +1779,32 @@ export default function CosmicConnections() {
       {/* 1. SECTION HEADER */}
       <div className="text-center max-w-2xl mx-auto mb-10">
         <span className="text-amber-500 font-mono text-[10px] uppercase tracking-[0.25em] font-extrabold block mb-2">
-          Celestial Harmonics Tab
+          {txt.badge}
         </span>
         <h2 className="text-3xl md:text-4xl font-serif text-white uppercase tracking-wider font-bold mb-4">
-          Cosmic Connections & Matching
+          {t("synergy.title") || "Cosmic Connections & Matching"}
         </h2>
         <p className="text-zinc-400 text-sm font-light leading-relaxed">
-          Unlock high-fidelity Astrological matching. Calculate your Lagna Ascendant, Moon stars, and Ashtakoot scores, and check ancestral alignments dynamically.
+          {t("synergy.sub") || "Unlock high-fidelity Astrological matching. Calculate your Lagna Ascendant, Moon stars, and Ashtakoot scores, and check ancestral alignments dynamically."}
         </p>
       </div>
 
       {/* Mode Switches */}
       <div className="flex justify-center mb-8">
-        <div className="bg-[#111015]/80 p-1.5 rounded-full border border-zinc-850 flex gap-1">
+        <div className="bg-[#111015]/60 backdrop-blur-md p-1.5 rounded-full border border-zinc-800/60 shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex gap-1">
           <button
             onClick={() => setMode("matching")}
             className={`px-6 py-2.5 rounded-full text-xs font-mono font-bold uppercase transition-all duration-300 tracking-wider flex items-center gap-2 ${mode === "matching" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]" : "text-zinc-400 hover:text-white"}`}
           >
             <Heart className="w-3.5 h-3.5" />
-            Couple Matching
+            {txt.coupleMatching}
           </button>
           <button
             onClick={() => setMode("single")}
             className={`px-6 py-2.5 rounded-full text-xs font-mono font-bold uppercase transition-all duration-300 tracking-wider flex items-center gap-2 ${mode === "single" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]" : "text-zinc-400 hover:text-white"}`}
           >
             <User className="w-3.5 h-3.5" />
-            Single Kundali
+            {txt.singleKundali}
           </button>
           <button
             onClick={() => setMode("marriage")}
@@ -1265,7 +1817,7 @@ export default function CosmicConnections() {
       </div>
 
       {/* 2. CONFIGURATION FORMS CONTAINER */}
-      <div className="bg-gradient-to-b from-[#110f17] to-[#0c0a0f] border border-zinc-800/80 rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.85)] mb-10 relative overflow-hidden">
+      <div className="bg-transparent border border-zinc-800/40 rounded-3xl p-6 sm:p-8 mb-10 relative overflow-hidden shadow-none">
         <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -1279,15 +1831,15 @@ export default function CosmicConnections() {
               </div>
               <div>
                 <h4 className="text-sm font-semibold text-white tracking-wide uppercase">
-                  {mode === "matching" ? "Partner A Details" : mode === "marriage" ? "Native Birth Details (For Marriage Prediction)" : "Lagna Birth Details"}
+                  {mode === "matching" ? txt.partnerADetails : mode === "marriage" ? txt.nativeBirthDetails : txt.lagnaBirthDetails}
                 </h4>
-                <p className="text-[10px] text-zinc-500">First Native Coordinate Map</p>
+                <p className="text-[10px] text-zinc-500">{txt.firstNativeCoordMap}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">First Name</label>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">{txt.firstName}</label>
                 <input
                   type="text"
                   value={partnerAName}
@@ -1296,7 +1848,7 @@ export default function CosmicConnections() {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">Date of Birth</label>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">{txt.dateOfBirth}</label>
                 <input
                   type="date"
                   value={partnerADob}
@@ -1308,7 +1860,7 @@ export default function CosmicConnections() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">Time of Birth</label>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">{txt.timeOfBirth}</label>
                 <input
                   type="time"
                   value={partnerATime}
@@ -1317,17 +1869,75 @@ export default function CosmicConnections() {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">Place of Birth</label>
-                <input
-                  type="text"
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">{txt.placeOfBirth}</label>
+                <BirthPlaceAutocomplete
                   value={partnerAPlace}
-                  onChange={(e) => setPartnerAPlace(e.target.value)}
-                  className="w-full bg-[#08070b]/60 border border-zinc-800 focus:border-amber-500/50 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all duration-300"
+                  onSelectPlace={(place) => {
+                    setPartnerAPlace(place.formattedAddress);
+                    setPartnerALat(place.latitude);
+                    setPartnerALon(place.longitude);
+                    setPartnerATimezone(place.timezone);
+                  }}
+                  placeholder="Search birthplace for Partner A..."
+                  language={language}
                 />
               </div>
             </div>
-          </div>
 
+            {/* Partner A Geographic Details and Coordinate Panel */}
+            <div className="bg-zinc-900/10 border border-zinc-850/40 rounded-xl p-3.5 mt-1.5">
+              <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider">
+                <span className="text-zinc-400 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Geographic parameters
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowPartnerACoords(!showPartnerACoords)}
+                  className="text-[10px] text-amber-500/80 hover:text-amber-400 font-semibold focus:outline-none transition hover:underline"
+                >
+                  {showPartnerACoords ? "Hide details ▲" : "Show details ▼"}
+                </button>
+              </div>
+
+              <div className="mt-2 text-[11px] text-zinc-400 font-mono flex items-center justify-between bg-zinc-950/20 px-2.5 py-1.5 rounded-lg border border-zinc-800/40">
+                <div className="truncate pr-2">
+                  <span className="text-zinc-500">TZ:</span> <span className="text-zinc-300 font-medium">{partnerATimezone}</span>
+                </div>
+                <div>
+                  <span className="text-zinc-500">LMT Offset:</span> <span className="text-zinc-300 font-medium">{(Math.round(partnerALon / 15 * 4) / 4) >= 0 ? "+" : ""}{(Math.round(partnerALon / 15 * 4) / 4).toFixed(2)}h</span>
+                </div>
+              </div>
+
+              {showPartnerACoords && (
+                <div className="grid grid-cols-2 gap-3.5 mt-3.5 pt-3 border-t border-zinc-800/40">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Latitude</label>
+                    <input 
+                      type="number" 
+                      step="any"
+                      value={partnerALat}
+                      onChange={(e) => setPartnerALat(parseFloat(e.target.value) || 0)}
+                      placeholder="e.g. 19.076" 
+                      className="w-full bg-transparent border border-zinc-800 focus:border-amber-500/50 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none transition font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Longitude</label>
+                    <input 
+                      type="number" 
+                      step="any"
+                      value={partnerALon}
+                      onChange={(e) => setPartnerALon(parseFloat(e.target.value) || 0)}
+                      placeholder="e.g. 72.877" 
+                      className="w-full bg-transparent border border-zinc-800 focus:border-amber-500/50 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none transition font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+ 
           {/* Partner B Cusp (Matching Only) */}
           {mode === "matching" && (
             <div className="md:col-span-6 space-y-4">
@@ -1336,14 +1946,14 @@ export default function CosmicConnections() {
                   <Heart className="w-4 h-4 text-amber-400" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-white tracking-wide uppercase">Partner B Details</h4>
-                  <p className="text-[10px] text-zinc-500">Second Native Coordinate Map</p>
+                  <h4 className="text-sm font-semibold text-white tracking-wide uppercase">{txt.partnerBDetails}</h4>
+                  <p className="text-[10px] text-zinc-500">{txt.secondNativeCoordMap}</p>
                 </div>
               </div>
-
+ 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">Second Name</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">{txt.secondName}</label>
                   <input
                     type="text"
                     value={partnerBName}
@@ -1352,7 +1962,7 @@ export default function CosmicConnections() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">Date of Birth</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">{txt.dateOfBirth}</label>
                   <input
                     type="date"
                     value={partnerBDob}
@@ -1361,10 +1971,10 @@ export default function CosmicConnections() {
                   />
                 </div>
               </div>
-
+ 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">Time of Birth</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">{txt.timeOfBirth}</label>
                   <input
                     type="time"
                     value={partnerBTime}
@@ -1373,19 +1983,77 @@ export default function CosmicConnections() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">Place of Birth</label>
-                  <input
-                    type="text"
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">{txt.placeOfBirth}</label>
+                  <BirthPlaceAutocomplete
                     value={partnerBPlace}
-                    onChange={(e) => setPartnerBPlace(e.target.value)}
-                    className="w-full bg-[#08070b]/60 border border-zinc-800 focus:border-amber-500/50 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all duration-300"
+                    onSelectPlace={(place) => {
+                      setPartnerBPlace(place.formattedAddress);
+                      setPartnerBLat(place.latitude);
+                      setPartnerBLon(place.longitude);
+                      setPartnerBTimezone(place.timezone);
+                    }}
+                    placeholder="Search birthplace for Partner B..."
+                    language={language}
                   />
                 </div>
+              </div>
+
+              {/* Partner B Geographic Details and Coordinate Panel */}
+              <div className="bg-zinc-900/10 border border-zinc-850/40 rounded-xl p-3.5 mt-1.5">
+                <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider">
+                  <span className="text-zinc-400 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Geographic parameters
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowPartnerBCoords(!showPartnerBCoords)}
+                    className="text-[10px] text-amber-500/80 hover:text-amber-400 font-semibold focus:outline-none transition hover:underline"
+                  >
+                    {showPartnerBCoords ? "Hide details ▲" : "Show details ▼"}
+                  </button>
+                </div>
+
+                <div className="mt-2 text-[11px] text-zinc-400 font-mono flex items-center justify-between bg-zinc-950/20 px-2.5 py-1.5 rounded-lg border border-zinc-800/40">
+                  <div className="truncate pr-2">
+                    <span className="text-zinc-500">TZ:</span> <span className="text-zinc-300 font-medium">{partnerBTimezone}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">LMT Offset:</span> <span className="text-zinc-300 font-medium">{(Math.round(partnerBLon / 15 * 4) / 4) >= 0 ? "+" : ""}{(Math.round(partnerBLon / 15 * 4) / 4).toFixed(2)}h</span>
+                  </div>
+                </div>
+
+                {showPartnerBCoords && (
+                  <div className="grid grid-cols-2 gap-3.5 mt-3.5 pt-3 border-t border-zinc-800/40">
+                    <div>
+                      <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Latitude</label>
+                      <input 
+                        type="number" 
+                        step="any"
+                        value={partnerBLat}
+                        onChange={(e) => setPartnerBLat(parseFloat(e.target.value) || 0)}
+                        placeholder="e.g. 28.6139" 
+                        className="w-full bg-transparent border border-zinc-800 focus:border-amber-500/50 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none transition font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Longitude</label>
+                      <input 
+                        type="number" 
+                        step="any"
+                        value={partnerBLon}
+                        onChange={(e) => setPartnerBLon(parseFloat(e.target.value) || 0)}
+                        placeholder="e.g. 77.209" 
+                        className="w-full bg-transparent border border-zinc-800 focus:border-amber-500/50 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none transition font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
-
+ 
         {/* Submit triggers */}
         <div className="mt-8 flex justify-end">
           <button
@@ -1396,18 +2064,18 @@ export default function CosmicConnections() {
             {isLoading ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                Resolving Alignment...
+                {txt.resolvingAlignment}
               </>
             ) : (
               <>
                 <Compass className="w-4 h-4 group-hover:rotate-45 transition-transform duration-500" />
-                {mode === "marriage" ? "Predict Marriage Timing" : "Establish Synergy Grid"}
+                {mode === "marriage" ? txt.predictMarriageTiming : txt.establishSynergyGrid}
               </>
             )}
           </button>
         </div>
       </div>
-
+ 
       {/* 3. DIAGNOSTICS & DASHBOARDS */}
       <AnimatePresence mode="wait">
         {kundaliResult && !isLoading && (
@@ -1425,7 +2093,7 @@ export default function CosmicConnections() {
                   onClick={() => setActiveTab("suitability")}
                   className={`py-3 px-1 text-xs font-mono font-bold uppercase tracking-wider transition-all duration-300 relative border-b-2 ${activeTab === "suitability" ? "text-amber-400 border-amber-500" : "text-zinc-400 border-transparent hover:text-white"}`}
                 >
-                  Ashtakoot Suitability
+                  {txt.ashtakootSuitability}
                 </button>
               )}
               <button
@@ -1438,19 +2106,19 @@ export default function CosmicConnections() {
                 onClick={() => setActiveTab("dosha")}
                 className={`py-3 px-1 text-xs font-mono font-bold uppercase tracking-wider transition-all duration-300 relative border-b-2 ${activeTab === "dosha" ? "text-amber-400 border-amber-500" : "text-zinc-400 border-transparent hover:text-white"}`}
               >
-                Diagnostic Flashcards
+                {txt.diagnosticFlashcards}
               </button>
               <button
                 onClick={() => setActiveTab("charts")}
                 className={`py-3 px-1 text-xs font-mono font-bold uppercase tracking-wider transition-all duration-300 relative border-b-2 ${activeTab === "charts" ? "text-amber-400 border-amber-500" : "text-zinc-400 border-transparent hover:text-white"}`}
               >
-                Astrological Charts
+                {txt.astrologicalCharts}
               </button>
               <button
                 onClick={() => setActiveTab("interpretation")}
                 className={`py-3 px-1 text-xs font-mono font-bold uppercase tracking-wider transition-all duration-300 relative border-b-2 ${activeTab === "interpretation" ? "text-amber-400 border-amber-500" : "text-zinc-400 border-transparent hover:text-white"}`}
               >
-                Vedic Interpretation
+                {txt.vedicInterpretation}
               </button>
             </div>
 
@@ -1462,11 +2130,11 @@ export default function CosmicConnections() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   {/* Score circle card */}
                   <div className="lg:col-span-4 bg-[#111015]/40 border border-zinc-850 p-6 rounded-2xl text-center space-y-6">
-                    <h4 className="text-xs font-mono text-zinc-400 uppercase tracking-widest">Resonance Score</h4>
+                    <h4 className="text-xs font-mono text-zinc-400 uppercase tracking-widest">{txt.resonanceScore}</h4>
                     <div className="relative w-44 h-44 mx-auto flex items-center justify-center bg-amber-500/5 rounded-full border border-amber-500/10 shadow-[0_0_30px_rgba(245,158,11,0.05)]">
                       <div className="text-center">
                         <span className="text-5xl font-serif font-extrabold text-amber-400 block">{kundaliResult.overallScore}</span>
-                        <span className="text-[10px] font-mono text-zinc-500 tracking-wider uppercase block">Out of 36 Gunas</span>
+                        <span className="text-[10px] font-mono text-zinc-500 tracking-wider uppercase block">{txt.outOf36Gunas}</span>
                       </div>
                     </div>
                     <div className="p-3.5 bg-amber-500/5 rounded-xl border border-amber-500/10">
@@ -1479,7 +2147,7 @@ export default function CosmicConnections() {
                   <div className="lg:col-span-8 space-y-4">
                     <h4 className="text-xs font-mono text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-amber-500" />
-                      Detailed 8-Fold Ashtakoot Breakdown
+                      {txt.detailedAshtakoot}
                     </h4>
                     <div className="space-y-3">
                       {kundaliResult.kootaBreakdown.map((item: any, idx: number) => {
@@ -1494,7 +2162,7 @@ export default function CosmicConnections() {
                               <span className={`text-base font-mono font-bold block ${isPerfect ? "text-emerald-400" : "text-amber-400"}`}>
                                 {item.score} / {item.max}
                               </span>
-                              <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Points</span>
+                              <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">{txt.points}</span>
                             </div>
                           </div>
                         );
@@ -1628,72 +2296,72 @@ export default function CosmicConnections() {
                           if (py === 6) {
                             return {
                               score: 95,
-                              label: "Highly Auspicious (Venus Cycle)",
+                              label: txt.py6Label,
                               colorClass: "text-rose-400 bg-rose-500/10 border-rose-500/20",
-                              text: "Year governed by Venus, the cosmic master of alliances, love, domestic harmony, and marriage unions. Excellent for legal and sacred commitments."
+                              text: txt.py6Text
                             };
                           }
                           if (py === 3) {
                             return {
                               score: 90,
-                              label: "Auspicious Expansion (Jupiter Cycle)",
+                              label: txt.py3Label,
                               colorClass: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-                              text: "Year governed by Jupiter, representing divine grace, luck, protector of marriage, wisdom, and ritual expansion. Highly favorable for family blessing."
+                              text: txt.py3Text
                             };
                           }
                           if (py === 2) {
                             return {
                               score: 85,
-                              label: "Harmonious Union (Moon Cycle)",
+                              label: txt.py2Label,
                               colorClass: "text-teal-400 bg-teal-500/10 border-teal-500/20",
-                              text: "Year of the Moon, focusing on empathy, pairing, collaboration, and emotional consolidation. Perfect for establishing shared emotional roots."
+                              text: txt.py2Text
                             };
                           }
                           if (py === 1) {
                             return {
                               score: 75,
-                              label: "New Commitments (Sun Cycle)",
+                              label: txt.py1Label,
                               colorClass: "text-orange-400 bg-orange-500/10 border-orange-500/20",
-                              text: "Year of the Sun, marking new beginnings, leadership, and shifts in social status. Favorable for initiating fresh life stages and commitments."
+                              text: txt.py1Text
                             };
                           }
                           if (py === 9) {
                             return {
                               score: 70,
-                              label: "Karmic Milestones (Mars Cycle)",
+                              label: txt.py9Label,
                               colorClass: "text-purple-400 bg-purple-500/10 border-purple-500/20",
-                              text: "Year of Mars, triggering the closure of old 9-year loops to prepare for significant commitments. Excellent for high-intensity spiritual resolutions."
+                              text: txt.py9Text
                             };
                           }
                           if (py === 5) {
                             return {
                               score: 60,
-                              label: "Dynamic Adaptation (Mercury Cycle)",
+                              label: txt.py5Label,
                               colorClass: "text-blue-400 bg-blue-500/10 border-blue-500/20",
-                              text: "Year of Mercury, ruling communication, travel, and contracts. Good for verbal alignments and public engagements, though requires detailed planning."
+                              text: txt.py5Text
                             };
                           }
                           if (py === 8) {
                             return {
                               score: 50,
-                              label: "Karmic Balance (Saturn Cycle)",
+                              label: txt.py8Label,
                               colorClass: "text-zinc-400 bg-zinc-500/10 border-zinc-500/20",
-                              text: "Year of Saturn, indicating heavy responsibilities, duties, and steady progress. Safe for marriage if patience and duty are valued over impulse."
+                              text: txt.py8Text
                             };
                           }
                           if (py === 4) {
                             return {
                               score: 42,
-                              label: "Unpredictable Shifts (Rahu Cycle)",
+                              label: txt.py4Label,
                               colorClass: "text-red-400 bg-red-500/10 border-red-500/20",
-                              text: "Year of Rahu, prompting unexpected turns, travel, or sudden alignments. Requires extreme caution, grounding, and clear legal boundaries."
+                              text: txt.py4Text
                             };
                           }
                           return {
                             score: 40,
-                            label: "Spiritual Introspection (Ketu Cycle)",
+                            label: txt.pyOtherLabel,
                             colorClass: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
-                            text: "Year of Ketu, calling for inner work, meditation, and spiritual reflection. Best suited for spiritual or simple quiet ceremonies rather than grand events."
+                            text: txt.pyOtherText
                           };
                         };
 
@@ -1716,15 +2384,29 @@ export default function CosmicConnections() {
 
                           if (marriageAnalysisMode === "joint") {
                             finalHarmony = Math.round((detailA.score + detailB.score + detailJoint.score) / 3);
-                            explanation = `Joint Personal Year reduces to ${pyJoint} (${detailJoint.label}). Partner A is in Year ${pyA}, while Partner B is in Year ${pyB}. This creates a ${finalHarmony >= 80 ? "highly coordinated energetic resonance" : finalHarmony >= 65 ? "balanced spiritual timing" : "karmic learning cycle"} for marriage commitment.`;
+                            const resonanceStr = finalHarmony >= 80 ? txt.highlyCoordinated : finalHarmony >= 65 ? txt.balancedSpiritual : txt.karmicLearning;
+                            explanation = txt.jointPyExplanation
+                              .replace("{pyJoint}", String(pyJoint))
+                              .replace("{labelJoint}", detailJoint.label)
+                              .replace("{pyA}", String(pyA))
+                              .replace("{pyB}", String(pyB))
+                              .replace("{resonance}", resonanceStr);
                           } else if (marriageAnalysisMode === "partnerA") {
                             finalHarmony = detailA.score;
                             pyJoint = pyA;
-                            explanation = `${partnerAName} is in Personal Year ${pyA} (${detailA.label}). ${detailA.text}`;
+                            explanation = txt.focusAExplanation
+                              .replace("{name}", partnerAName)
+                              .replace("{py}", String(pyA))
+                              .replace("{label}", detailA.label)
+                              .replace("{text}", detailA.text);
                           } else {
                             finalHarmony = detailB.score;
                             pyJoint = pyB;
-                            explanation = `${partnerBName} is in Personal Year ${pyB} (${detailB.label}). ${detailB.text}`;
+                            explanation = txt.focusBExplanation
+                              .replace("{name}", partnerBName)
+                              .replace("{py}", String(pyB))
+                              .replace("{label}", detailB.label)
+                              .replace("{text}", detailB.text);
                           }
 
                           return {
