@@ -35,10 +35,10 @@ export default function App() {
   const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
-    // Artificial 2.2s loader to allow Three.js WebGL and assets to establish connections
+    // Optimized snappier load duration for instant visual responsiveness
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2200);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);

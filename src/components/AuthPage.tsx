@@ -50,6 +50,7 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bgImageLoaded, setBgImageLoaded] = useState(false);
 
   // Email Verification countdown
   const [resendTimer, setResendTimer] = useState(0);
@@ -129,6 +130,15 @@ export default function AuthPage() {
     setError(null);
     setSuccess(null);
   }, [mode]);
+
+  // Preload heavy background image for instant page responsiveness
+  useEffect(() => {
+    const img = new Image();
+    img.src = "https://raw.githubusercontent.com/jkbharti159/Patriotic-images/main/_%20(7)%20(24).jpeg";
+    img.onload = () => {
+      setBgImageLoaded(true);
+    };
+  }, []);
 
   // If user is logged in but not verified, show verification page
   useEffect(() => {
@@ -305,15 +315,18 @@ export default function AuthPage() {
         style={{ 
           backgroundImage: `url("https://raw.githubusercontent.com/jkbharti159/Patriotic-images/main/_%20(7)%20(24).jpeg")`
         }}
+        initial={{ opacity: 0 }}
         animate={{ 
+          opacity: bgImageLoaded ? 1 : 0,
           scale: [1, 1.08, 1],
           x: [0, 4, -4, 0],
           y: [0, -3, 3, 0]
         }}
         transition={{
-          duration: 35,
-          repeat: Infinity,
-          ease: "easeInOut"
+          opacity: { duration: 1.2, ease: "easeOut" },
+          scale: { duration: 35, repeat: Infinity, ease: "easeInOut" },
+          x: { duration: 35, repeat: Infinity, ease: "easeInOut" },
+          y: { duration: 35, repeat: Infinity, ease: "easeInOut" }
         }}
       />
       

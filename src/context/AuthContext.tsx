@@ -71,15 +71,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
         // Update if there are any differences
         if (existingData.lastLogin !== nowStr || existingData.emailVerified !== firebaseUser.emailVerified) {
-          await updateDoc(userRef, {
-            lastLogin: nowStr,
-            emailVerified: firebaseUser.emailVerified
-          });
+          try {
+            await updateDoc(userRef, {
+              lastLogin: nowStr,
+              emailVerified: firebaseUser.emailVerified
+            });
+          } catch (writeErr) {
+            console.warn("Could not write lastLogin update to Firestore (offline mode):", writeErr);
+          }
         }
         setProfile(updatedProfile);
       }
     } catch (err) {
-      console.error("Error syncing user profile with Firestore:", err);
+      console.warn("Error syncing user profile with Firestore (falling back to cached/local profile):", err);
+      // Fallback profile if offline so the app continues to function seamlessly
+      const fallbackProfile: UserProfile = {
+        uid: firebaseUser.uid,
+        fullName: customFullName || firebaseUser.displayName || "Cosmic Seeker",
+        email: firebaseUser.email || "",
+        photoURL: firebaseUser.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${firebaseUser.uid}`,
+        provider: firebaseUser.providerData[0]?.providerId || "password",
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        emailVerified: firebaseUser.emailVerified,
+        subscription: "free",
+        role: "user"
+      };
+      setProfile(fallbackProfile);
     }
   };
 
