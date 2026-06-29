@@ -26,3 +26,17 @@ export interface CalculationResult {
   birthday: number;
   personalYear: number;
 }
+
+export interface UserProfile {
+  uid: string;
+  fullName: string;
+  email: string;
+  photoURL: string;
+  provider: string;
+  createdAt: string;
+  lastLogin: string;
+  emailVerified: boolean;
+  subscription: "free" | "premium";
+  role: "user" | "admin";
+}
+

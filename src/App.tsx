@@ -10,9 +10,11 @@ import ShivaImageBackground from "./components/ShivaImageBackground";
 import CustomCursor from "./components/CustomCursor";
 import Swastika from "./components/Swastika";
 import VedicLifeObstacleAnalyzer from "./components/VedicLifeObstacleAnalyzer";
-import { Sparkles, Moon, Sun, Star, Compass, HelpCircle, ChevronDown, Compass as Astrolabe, ChevronRight, Linkedin, Globe, Shield } from "lucide-react";
+import { Sparkles, Moon, Sun, Star, Compass, HelpCircle, ChevronDown, Compass as Astrolabe, ChevronRight, Linkedin, Globe, Shield, LogOut, User as UserIcon } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useLanguage } from "./context/LanguageContext";
+import { useAuth } from "./context/AuthContext";
+import AuthPage from "./components/AuthPage";
 
 const TABS = [
   { id: "portal", label: "Portal", icon: Sparkles },
@@ -25,9 +27,11 @@ const TABS = [
 ] as const;
 
 export default function App() {
+  const { user, profile, loading: authLoading, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"portal" | "ank-map" | "rays" | "tarot" | "synergy" | "zodiac" | "calculator" | "obstacles">("portal");
   const [langOpen, setLangOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
@@ -85,7 +89,7 @@ export default function App() {
       <CustomCursor />
 
       {/* 1. CINEMA LOADING SCREEN */}
-      {isLoading && (
+      {(isLoading || authLoading) && (
         <div className="fixed inset-0 bg-[#09080c] z-[99999] flex flex-col items-center justify-center transition-all duration-1000 ease-in-out opacity-100 overflow-hidden">
           
           {/* Animated Celestial Sphere Background Image */}
@@ -158,7 +162,11 @@ export default function App() {
       )}
 
       {/* 2. CORE APPS WRAPPER */}
-      <div className={`transition-opacity duration-1000 ease-out ${isLoading ? "opacity-0" : "opacity-100"}`}>
+      {!(isLoading || authLoading) && (!user || !user.emailVerified) ? (
+        <AuthPage />
+      ) : (
+        <>
+          <div className={`transition-opacity duration-1000 ease-out ${isLoading ? "opacity-0" : "opacity-100"}`}>
         
         {/* NAV BAR HEADER */}
         <header className="fixed top-0 left-0 right-0 h-20 bg-[#09080c]/85 backdrop-blur-md border-b border-amber-500/5 z-[1000] flex items-center justify-between px-4 md:px-12 select-none pointer-events-auto gap-2 md:gap-4">
@@ -261,6 +269,58 @@ export default function App() {
                 </div>
               )}
             </div>
+
+            {/* User Profile Dropdown */}
+            {user && (
+              <div className="relative pointer-events-auto shrink-0 z-[2010]">
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="flex items-center gap-2 px-2.5 py-1.5 border border-amber-500/20 bg-[#16151c]/65 hover:bg-[#1d1b26]/90 rounded-lg text-xs font-mono transition-all cursor-pointer shadow-md select-none"
+                >
+                  <img
+                    src={profile?.photoURL || user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`}
+                    alt="User Profile avatar"
+                    referrerPolicy="no-referrer"
+                    className="w-6 h-6 rounded-full border border-amber-500/30 object-cover"
+                  />
+                  <span className="max-w-[80px] truncate text-amber-200 hover:text-white font-bold hidden md:inline">
+                    {profile?.fullName || user.displayName || "Voyager"}
+                  </span>
+                  <ChevronDown className={`w-3 h-3 text-amber-400 transition-transform duration-300 ${profileOpen ? "rotate-180" : ""}`} />
+                </button>
+                {profileOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-[#111015]/95 backdrop-blur-md border border-amber-500/20 rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.85)] z-[2020] py-2 px-1 select-none font-sans text-xs">
+                    {/* User info */}
+                    <div className="px-3 py-2 border-b border-white/5 mb-1.5">
+                      <p className="font-serif font-black text-white text-sm truncate">{profile?.fullName || user.displayName || "Cosmic Voyager"}</p>
+                      <p className="text-[10px] text-zinc-400 font-mono truncate mt-0.5">{user.email}</p>
+                    </div>
+                    {/* Role & subscription badges */}
+                    <div className="px-3 py-1 space-y-1.5 text-[10px] font-mono mb-2">
+                      <div className="flex items-center justify-between text-zinc-400">
+                        <span>Role:</span>
+                        <span className="text-amber-400 uppercase font-black bg-amber-500/10 px-1.5 py-0.5 rounded text-[9px]">{profile?.role || "user"}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-zinc-400">
+                        <span>Frequency:</span>
+                        <span className="text-purple-400 uppercase font-black bg-purple-500/10 px-1.5 py-0.5 rounded text-[9px]">{profile?.subscription || "free"}</span>
+                      </div>
+                    </div>
+                    {/* Logout option */}
+                    <button
+                      onClick={async () => {
+                        setProfileOpen(false);
+                        await logout();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors cursor-pointer text-left font-mono text-[11px]"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      Secure Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </header>
 
@@ -627,6 +687,8 @@ export default function App() {
           </button>
         </div>
       )}
+    </>
+  )}
 
     </div>
   );

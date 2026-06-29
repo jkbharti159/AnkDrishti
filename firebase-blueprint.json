@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Represents a user's profile and settings in the AnkDrishti platform.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The unique Firebase Authentication UID of the user."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The full name of the user."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The email address of the user."
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "URL to the user's profile picture or avatar."
+        },
+        "provider": {
+          "type": "string",
+          "description": "The authentication provider (e.g., 'google', 'password')."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the user account was created."
+        },
+        "lastLogin": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the user's last login."
+        },
+        "emailVerified": {
+          "type": "boolean",
+          "description": "Whether the user's email has been verified."
+        },
+        "subscription": {
+          "type": "string",
+          "enum": ["free", "premium"],
+          "description": "The subscription tier of the user."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"],
+          "description": "The role of the user inside the system."
+        }
+      },
+      "required": ["uid", "fullName", "email", "provider", "createdAt", "lastLogin", "emailVerified", "subscription", "role"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "#/entities/UserProfile",
+      "description": "Stores user profiles keyed by their Firebase Auth UID."
+    }
+  }
+}
